@@ -6,7 +6,7 @@ Add a folder named "raw_data" where you'll store the data to work with. This fol
 mkdir raw_data
 
 ### Create a virtualenv for the project
-pyenv virtualenv BookMatch_env
+pyenv virtualenv 3.10.6 BookMatch_env
 
 ### Activate the virtualenv when you are located in the folder
 pyenv local BookMatch_env
