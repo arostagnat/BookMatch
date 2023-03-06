@@ -6,7 +6,7 @@ Add a folder named "raw_data" where you'll store the data to work with. This fol
 mkdir raw_data
 
 ### If your python version is different from 3.10
-# pyenv install 3.10.6
+#### pyenv install 3.10.6
 
 ### Create a virtualenv for the project
 pyenv virtualenv 3.10.6 BookMatch_env
