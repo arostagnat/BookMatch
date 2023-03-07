@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import string
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
@@ -116,7 +117,7 @@ def Cleaner(data, return_tokenize=True):
                 temp_text.append(word)
 
         if not temp_text:   # If the reviews haven't important word
-            temp_text = ["no_word"]
+            temp_text = np.nan
 
         temp_data.append(temp_text)
 
@@ -130,7 +131,7 @@ def Cleaner(data, return_tokenize=True):
     final_data.drop("txt", axis=1, inplace=True)
 
     final_data = pd.concat([final_data, data.txt], axis=1)
-
+    final_data.dropna(inplace=True)
     print("\n✅ Cleaner is finish !!\n")
     return final_data
 
