@@ -22,20 +22,25 @@ def Sample_data():
     movies_sample = pd.DataFrame()
     for i, chunk in enumerate(chunks_movies):
         print(f"Start work chunk n° {i}")
-        temp_sample = chunk.sample(n=1000, replace=False, random_state=1)
+        temp_sample = chunk.sample(n=2000, replace=False, random_state=1)
         movies_sample = pd.concat([movies_sample, temp_sample])
 
     print("\nStart for books\n")
     books_sample = pd.DataFrame()
     for i, chunk in enumerate(chunks_book):
         print(f"Start work chunk n° {i}")
-        temp_sample = chunk.sample(n=1000, replace=False, random_state=1)
+        temp_sample = chunk.sample(n=2000, replace=False, random_state=1)
         books_sample = pd.concat([books_sample, temp_sample])
 
-    # On sauvegarde dans des csv
-    movies_sample.to_csv("raw_data/sample_movies_reviews.csv")
-    books_sample.to_csv("raw_data/sample_books_reviews.csv")
-    print("\nData save !\n")
+    # Remove all special characters
+    print("\nRemove special characters ...\n")
+    movies_sample.replace({r'[^\x00-\x7F]+':''}, regex=True, inplace=True)
+    books_sample.replace({r'[^\x00-\x7F]+':''}, regex=True, inplace=True)
+
+    # On sauvegarde dans des json
+    movies_sample.to_json("raw_data/sample_movies_reviews.json")
+    books_sample.to_json("raw_data/sample_books_reviews.json")
+    print("\n✅ Data save !\n")
 
     return None
 
@@ -45,7 +50,7 @@ def Cleaner(data, return_tokenize=True):
     Clean the reviews :
     Strip, lower, punctuations, tokenise, remove stop word, lemmatizing.
     Args:
-        data (pd.DataFrame): The all DataFrame of the reviews csv,
+        data (pd.DataFrame): The all DataFrame of the reviews json,
                             or the reviews columns with the columns name "txt"
         return_tokenize (bool): Return the reviews tokenize (True), or a unique string.
                                 Defaults to True.
@@ -53,6 +58,8 @@ def Cleaner(data, return_tokenize=True):
     Returns:
         pd.DataFrame: the clean reviews
     """
+
+    final_data = data.copy()
 
     print("\nStart Cleaner ...\n")
     # On strip
@@ -72,7 +79,7 @@ def Cleaner(data, return_tokenize=True):
 
     # On retire la ponctuations et caractères spéciaux (non-utf8)
     print("Remove punctuations")
-    all_punctuation = string.punctuation + ""
+    all_punctuation = string.punctuation + ""
     temp = []
     for text in data.txt:
         for punctuation in all_punctuation:
@@ -119,28 +126,33 @@ def Cleaner(data, return_tokenize=True):
     else:
         data["txt"] = [" ".join(review_list) for review_list in temp_data]
 
+    # print(data.columns)
+    final_data.drop("txt", axis=1, inplace=True)
+
+    final_data = pd.concat([final_data, data.txt], axis=1)
 
     print("\n✅ Cleaner is finish !!\n")
-    return data
+    return final_data
 
 
 # Test only
 if __name__ == "__main__":
-    print("Start test 🏃\n\n")
+    print("\nStart test 🏃\n\n")
 
     # Test de Sample_data
-    print("Start test Sample_data\n")
+    print("Start test Sample_data")
     Sample_data()
 
     # Test de Cleaner
-    data = pd.read_csv("raw_data/sample_movies_reviews.csv")
+    print("\nStart test Cleaner\n")
+    data = pd.read_json("raw_data/sample_movies_reviews.json")
     data = Cleaner(data, return_tokenize=True)
-    data.to_csv("raw_data/sample_movies_reviews_clean.csv", index=False)
+    data.to_json("raw_data/sample_movies_reviews_clean.json")
 
-    data2 = pd.read_csv("raw_data/sample_books_reviews.csv")
+    data2 = pd.read_json("raw_data/sample_books_reviews.json")
     data2 = Cleaner(data2, return_tokenize=True)
-    data2.to_csv("raw_data/sample_books_reviews_clean.csv", index=False)
+    data2.to_json("raw_data/sample_books_reviews_clean.json")
 
-    print("✅ Data save")
+    print("✅ Data save\n")
 
-    pass
+    print("✅ End test ! 🙌\n")
