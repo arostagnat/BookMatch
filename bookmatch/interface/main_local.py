@@ -21,49 +21,57 @@ def preprocess():
 
     """
 
-    from bookmatch.logic.data_v2 import Cleaner as clean
+    from bookmatch.logic.data import Cleaner as clean
 
-
-    chksize=2000#CHUNK_SIZE
-    linesize=20000#DATA_SIZE
-
+    # on definit les path locaux raw ou on va piocher les data.json
     movie_rev_raw_path = Path(LOCAL_RAW_DATA_PATH).joinpath("raw_movies", "reviews.json")
     book_rev_raw_path = Path(LOCAL_RAW_DATA_PATH).joinpath("raw_book", "reviews.json")
 
+    # on definit les path locaux process pour stocker les proc_data.csv
     mov_proc_path = Path(LOCAL_PROC_DATA_PATH).joinpath("proc_movies")
     book_proc_path = Path(LOCAL_PROC_DATA_PATH).joinpath("proc_book")
-    # on cree les rep de preproc si pas deja fait
+
+    # on cree les rep de preproc en local si pas deja fait dans data/proc_data
     for pth in [mov_proc_path, book_proc_path]:
         if not os.path.exists(pth):
             os.makedirs(pth)
 
+    ########################################################
+    ########################################################
 
-    #on clean les rev de mov par chunk et on store 5 chunks par proc_test_i.csv
+    # on va traiter les data par chunks
+    chksize=10_000#CHUNK_SIZE
+    linesize=500_000#DATA_SIZE
+
     readerm=pd.read_json(movie_rev_raw_path,
                     lines=True,chunksize=chksize,nrows=linesize,
                     encoding='utf-8', encoding_errors='replace')
+
     dftot,dftemp,dftot2=None,None,None
+
+    # boucle for qui concat les txt de chaque chunk par item_id
     i,p=1,0
+    dftot,dftemp=None,None
     for chunk in readerm:
-        dftemp=chunk.groupby("item_id", as_index=False).agg({"txt": " /// ".join})
+        dftemp=chunk.groupby("item_id", as_index=False).agg({"txt": " ".join})
         if dftot is None:
             dftot=dftemp
-            dftot2=dftemp
         else:
             dftot=pd.concat([dftot,dftemp],ignore_index=True) #concat vertical
-            dftot=dftot.groupby("item_id", as_index=False).agg({"txt": " /// ".join})
-
-            dftot2=pd.concat([dftot2,dftemp],ignore_index=True) #concat vertical
-            dftot2=dftot.groupby("item_id", as_index=False).agg({"txt": " /// ".join}) #concat txt par item_id
+            dftot=dftot.groupby("item_id", as_index=False).agg({"txt": " ".join})
         p+=1
         ############## penser a coder clean par chunk et concat a la fin puis save
         if p==5:
-            dftot=clean(dftot, return_tokenize=False)
-            pathsavec=Path(mov_proc_path).joinpath(f"testm_chunk{i}.csv")
-            dftot.to_csv(pathsavec,index=False,sep=",")
+            ## on clean un total de 5 chunks
+            # dftot2=clean(dftot, return_tokenize=False)
 
-            pathsave=Path(mov_proc_path).joinpath(f"nc_testm_chunk{i}.csv")
-            dftot2.to_csv(pathsave,index=False,sep=",")
+            # #on save le csv clean
+            # path_csv_clean=Path(mov_proc_path).joinpath(f"mov_chunk{i}_clean.csv")
+            # dftot2.to_csv(path_csv_clean,index=False,sep=",")
+
+            # on save le csv pas clean
+            path_csv_raw=Path(mov_proc_path).joinpath(f"mov_chunk{i}_raw.csv")
+            dftot.to_csv(path_csv_raw,index=False,sep=",")
             dftot,dftot2=None,None
             i+=1
             p=0
@@ -77,18 +85,26 @@ def preprocess():
     dftot,dftemp=None,None
     i,p=1,0
     for chunk in readerb:
-        dftemp=chunk.groupby("item_id", as_index=False).agg({"txt": " /// ".join})
+        dftemp=chunk.groupby("item_id", as_index=False).agg({"txt": " ".join})
         if dftot is None:
             dftot=dftemp
         else:
             dftot=pd.concat([dftot,dftemp],ignore_index=True) #concat vertical
-            dftot=dftot.groupby("item_id", as_index=False).agg({"txt": " /// ".join}) #concat txt par item_id
+            dftot=dftot.groupby("item_id", as_index=False).agg({"txt": " ".join})
         p+=1
+        ############## penser a coder clean par chunk et concat a la fin puis save
         if p==5:
-            dftot=clean(dftot, return_tokenize=False)
-            pathsave=Path(book_proc_path).joinpath(f"testb_chunk{i}.csv")
-            dftot.to_csv(pathsave,index=False,sep=",")
-            dftot=None
+            ## on clean un total de 5 chunks
+            # dftot2=clean(dftot, return_tokenize=False)
+
+            # #on save le csv clean
+            # path_csv_clean=Path(book_proc_path).joinpath(f"book_chunk{i}_clean.csv")
+            # dftot2.to_csv(path_csv_clean,index=False,sep=",")
+
+            # on save le csv pas clean
+            path_csv_raw=Path(book_proc_path).joinpath(f"book_chunk{i}_raw.csv")
+            dftot.to_csv(path_csv_raw,index=False,sep=",")
+            dftot,dftot2=None,None
             i+=1
             p=0
 
