@@ -21,6 +21,7 @@ wordcloud
 gensim==4.2.0
 jupyterlab==3.6.1
 nltk==3.8.1
+sentence-transformers==2.2.2
 # Trick to install the version of Tensorflow depending on your processor: darwin == Mac, ARM == M1
 tensorflow-macos==2.10.0; sys_platform == 'darwin' and 'ARM' in platform_version # Mac M-chips
 tensorflow==2.10.0; sys_platform == 'darwin' and 'ARM' not in platform_version # Mac Intel chips
