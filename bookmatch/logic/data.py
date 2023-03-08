@@ -47,7 +47,7 @@ def Sample_data():
 
 
 
-def Cleaner(data, return_tokenize=True, jeff_method=0):
+def Cleaner(df, return_tokenize=True, jeff_method=0):
     """Cleaner
     Clean the reviews :
     Strip, lower, punctuations, tokenise, remove stop word, lemmatizing.
@@ -73,7 +73,7 @@ def Cleaner(data, return_tokenize=True, jeff_method=0):
     # On met en lower
     print("Lower")
     data["txt"] = data["txt"].apply(lambda x : x.lower())
-    
+
     # On retire les nombres
     if not jeff_method:
         print("Remove numbers")
@@ -89,7 +89,7 @@ def Cleaner(data, return_tokenize=True, jeff_method=0):
         for text in data.txt:
             temp.append("".join(text.translate(remove_digits)))
         data["txt"] = temp
-        
+
     # On retire la ponctuations et caractères spéciaux (non-utf8)
     print("Remove punctuations")
     all_punctuation = string.punctuation + ""
