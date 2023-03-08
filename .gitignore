@@ -1,5 +1,6 @@
 data/
 raw_data/
+aide/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
