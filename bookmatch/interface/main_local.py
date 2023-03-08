@@ -33,8 +33,8 @@ def preprocess(saveraw=0):
     ########################################################
 
     # on va traiter les data par chunks
-    chksize=CHUNK_SIZE
-    linesize=DATA_SIZE
+    chksize=10_000#CHUNK_SIZE
+    linesize=100_000#DATA_SIZE
 
     ###  on fait deux readers pour movies et books
 
@@ -57,7 +57,7 @@ def preprocess(saveraw=0):
             chunk_flat=flatten_txt(data=chunk,id="item_id",colname="txt")
             chunk_flat_raw=chunk_flat.copy() #oblige de faire une copie du flatten_raw car le "clean" de romain ecrase la variable qu'on lui passe
             ## on clean le chunk_flat
-            chunk_flat_clean=clean(chunk_flat, return_tokenize=False)
+            chunk_flat_clean=clean(chunk_flat, return_tokenize=False,meth_clean_numb2=1)
 
             # on concat le chunk_flat_clean avec le precedent
             if dftot is None:
