@@ -33,8 +33,8 @@ def preprocess(saveraw=0):
     ########################################################
 
     # on va traiter les data par chunks
-    chksize=10_000#CHUNK_SIZE
-    linesize=100_000#DATA_SIZE
+    chksize=1_000#CHUNK_SIZE
+    linesize=3_000#DATA_SIZE
 
     ###  on fait deux readers pour movies et books
 
@@ -76,26 +76,59 @@ def preprocess(saveraw=0):
 
         # en sortant de cette boucle on a dftot (et deftot_raw)
 
-
         #si c'est le premier passage on save les movies
         if readnum==1:
-            path_csv_clean=Path(mov_proc_path).joinpath(f"mov_rev_clean_{str(linesize)}_linesize.csv")
-            dftot.to_csv(path_csv_clean,index=False,sep=",")
+            dftot_movies=dftot.copy()
+            dftot_movies.rename(columns={"item_id":"item_id_movie"},inplace=True)
+            dftot_movies['is_movie']=1
+
             if saveraw==1:
-                path_csv_raw=Path(mov_proc_path).joinpath(f"mov_rev_raw_{str(linesize)}_linesize.csv")
-                dftot_raw.to_csv(path_csv_raw,index=False,sep=",")
+                dftot_movies_raw=dftot_raw.copy()
+                dftot_movies_raw.rename(columns={"item_id":"item_id_movie"})
+                dftot_movies_raw['is_movie']=1
+
+
+            #### code qui sauv en local dans un .csv
+            # path_csv_clean=Path(mov_proc_path).joinpath(f"mov_rev_clean_{str(linesize)}_linesize.csv")
+            # dftot.to_csv(path_csv_clean,index=False,sep=",")
+            # if saveraw==1:
+            #     path_csv_raw=Path(mov_proc_path).joinpath(f"mov_rev_raw_{str(linesize)}_linesize.csv")
+            #     dftot_raw.to_csv(path_csv_raw,index=False,sep=",")
 
         #si c'est le second passage on save les books
         elif readnum==2:
-            path_csv_clean=Path(book_proc_path).joinpath(f"book_rev_clean_{str(linesize)}_linesize.csv")
-            dftot.to_csv(path_csv_clean,index=False,sep=",")
+            dftot_book=dftot.copy()
+            dftot_book.rename(columns={"item_id":"item_id_book"},inplace=True)
+            dftot_book['is_movie']=0
+
             if saveraw==1:
-                path_csv_raw=Path(book_proc_path).joinpath(f"book_rev_raw_{str(linesize)}_linesize.csv")
-                dftot_raw.to_csv(path_csv_raw,index=False,sep=",")
+                dftot_book_raw=dftot_raw.copy()
+                dftot_book_raw.rename(columns={"item_id":"item_id_book"})
+                dftot_book_raw['is_movie']=0
+
+            # #### code qui sauv en local dans un .csv
+            # path_csv_clean=Path(book_proc_path).joinpath(f"book_rev_clean_{str(linesize)}_linesize.csv")
+            # dftot.to_csv(path_csv_clean,index=False,sep=",")
+            # if saveraw==1:
+            #     path_csv_raw=Path(book_proc_path).joinpath(f"book_rev_raw_{str(linesize)}_linesize.csv")
+            #     dftot_raw.to_csv(path_csv_raw,index=False,sep=",")
 
 
         readnum+=1 #permet de passer au reader suivant quand on ecrit csv
 
+
+    ### on concat mov et book
+    X_prepro=pd.concat([dftot_movies,dftot_book],ignore_index=True).fillna("$$$")
+
+    ###on sauve cette df en local
+    path_X_prepro=Path(LOCAL_PROC_DATA_PATH).joinpath(f"X_proc_{str(linesize)}_linesize.csv")
+    X_prepro.to_csv(path_X_prepro,index=False,sep=",")
+
+    if saveraw==1:
+        X_raw=pd.concat([dftot_movies,dftot_book],ignore_index=True).fillna("$$$")
+        #on sauve cette df en local
+        path_X_raw=Path(LOCAL_PROC_DATA_PATH).joinpath(f"X_raw_{str(linesize)}_linesize.csv")
+        X_raw.to_csv(path_X_raw,index=False,sep=",")
 
 
 if __name__ == '__main__':
