@@ -21,30 +21,41 @@ def preprocess(saveraw=0):
     book_rev_raw_path = Path(LOCAL_RAW_DATA_PATH).joinpath("raw_book", "reviews.json")
 
     # on definit les path locaux process pour stocker les proc_data.csv
-    mov_proc_path = Path(LOCAL_PROC_DATA_PATH).joinpath("proc_movies")
-    book_proc_path = Path(LOCAL_PROC_DATA_PATH).joinpath("proc_book")
+    # mov_proc_path = Path(LOCAL_PROC_DATA_PATH).joinpath("proc_movies")
+    # book_proc_path = Path(LOCAL_PROC_DATA_PATH).joinpath("proc_book")
 
     # on cree les rep de preproc en local si pas deja fait dans data/proc_data
-    for pth in [mov_proc_path, book_proc_path]:
-        if not os.path.exists(pth):
-            os.makedirs(pth)
+    # for pth in [mov_proc_path, book_proc_path]:
+    #     if not os.path.exists(pth):
+    #         os.makedirs(pth)
 
     ########################################################
     ########################################################
 
     # on va traiter les data par chunks
-    chksize=20_000#CHUNK_SIZE
-    linesize=100_000#DATA_SIZE
+    chksize=100#CHUNK_SIZE # a tuner en fonction de la ram
+    # linesize=1_000#DATA_SIZE # sit tu veux tester sur les "linesize" premieres lignes du json
+    linesize="full"#DATA_SIZE   #si tu veux traiter le full json
 
     ###  on fait deux readers pour movies et books
+    if linesize == "full":
+        readerm=pd.read_json(movie_rev_raw_path,
+                        lines=True,chunksize=chksize,
+                        encoding='utf-8', encoding_errors='replace')
 
-    readerm=pd.read_json(movie_rev_raw_path,
-                    lines=True,chunksize=chksize,nrows=linesize,
-                    encoding='utf-8', encoding_errors='replace')
+        readerb=pd.read_json(book_rev_raw_path,
+                        lines=True,chunksize=chksize,
+                        encoding='utf-8', encoding_errors='replace')
 
-    readerb=pd.read_json(book_rev_raw_path,
-                    lines=True,chunksize=chksize,nrows=linesize,
-                    encoding='utf-8', encoding_errors='replace')
+    else:
+        readerm=pd.read_json(movie_rev_raw_path,
+                        lines=True,chunksize=chksize,nrows=linesize,
+                        encoding='utf-8', encoding_errors='replace')
+
+        readerb=pd.read_json(book_rev_raw_path,
+                        lines=True,chunksize=chksize,nrows=linesize,
+                        encoding='utf-8', encoding_errors='replace')
+
 
     # on traite le premier reader puis le second
     readnum=1
@@ -56,18 +67,20 @@ def preprocess(saveraw=0):
             #on concat les txt des item_id qui apparaissent dans plusieurs lignes
             chunk_flat=flatten_txt(data=chunk,id="item_id",colname="txt")
             chunk_flat_raw=chunk_flat.copy() #oblige de faire une copie du flatten_raw car le "clean" de romain ecrase la variable qu'on lui passe
-            ## on clean le chunk_flat
-            chunk_flat_clean=clean(chunk_flat, return_tokenize=False,jeff_method=1)
 
-            # on concat le chunk_flat_clean avec le precedent
-            if dftot is None:
-                dftot=chunk_flat_clean
-            else:
-                dftot=pd.concat([dftot,chunk_flat_clean],ignore_index=True) #concat vertical du tot avec le chunk clean
-                dftot=flatten_txt(data=dftot,id="item_id",colname="txt") # on regroupe par item_id
+            if saveraw==0:
+                ## on clean le chunk_flat
+                chunk_flat_clean=clean(chunk_flat, return_tokenize=False,jeff_method=1)
 
-            # rajout de concat des txt ra pour model bert de antoine
-            if saveraw==1:
+                # on concat le chunk_flat_clean avec le precedent
+                if dftot is None:
+                    dftot=chunk_flat_clean
+                else:
+                    dftot=pd.concat([dftot,chunk_flat_clean],ignore_index=True) #concat vertical du tot avec le chunk clean
+                    dftot=flatten_txt(data=dftot,id="item_id",colname="txt") # on regroupe par item_id
+
+                # rajout de concat des txt ra pour model bert de antoine
+            elif saveraw==1:
                 if dftot_raw is None:
                     dftot_raw=chunk_flat_raw
                 else:
@@ -78,11 +91,12 @@ def preprocess(saveraw=0):
 
         #si c'est le premier passage on save les movies
         if readnum==1:
-            dftot_movies=dftot.copy()
-            dftot_movies.rename(columns={"item_id":"item_id_movie"},inplace=True)
-            dftot_movies['is_movie']=1
+            if saveraw==0:
+                dftot_movies=dftot.copy()
+                dftot_movies.rename(columns={"item_id":"item_id_movie"},inplace=True)
+                dftot_movies['is_movie']=1
 
-            if saveraw==1:
+            elif saveraw==1:
                 dftot_movies_raw=dftot_raw.copy()
                 dftot_movies_raw.rename(columns={"item_id":"item_id_movie"})
                 dftot_movies_raw['is_movie']=1
@@ -97,11 +111,12 @@ def preprocess(saveraw=0):
 
         #si c'est le second passage on save les books
         elif readnum==2:
-            dftot_book=dftot.copy()
-            dftot_book.rename(columns={"item_id":"item_id_book"},inplace=True)
-            dftot_book['is_movie']=0
+            if saveraw==0:
+                dftot_book=dftot.copy()
+                dftot_book.rename(columns={"item_id":"item_id_book"},inplace=True)
+                dftot_book['is_movie']=0
 
-            if saveraw==1:
+            elif saveraw==1:
                 dftot_book_raw=dftot_raw.copy()
                 dftot_book_raw.rename(columns={"item_id":"item_id_book"})
                 dftot_book_raw['is_movie']=0
@@ -116,22 +131,22 @@ def preprocess(saveraw=0):
 
         readnum+=1 #permet de passer au reader suivant quand on ecrit csv
 
+    if saveraw==0:
+        ### on concat mov et book
+        X_prepro=pd.concat([dftot_movies,dftot_book],ignore_index=True).fillna("$$$")
 
-    ### on concat mov et book
-    X_prepro=pd.concat([dftot_movies,dftot_book],ignore_index=True).fillna("$$$")
+        ###on sauve cette df en local
+        path_X_prepro=Path(LOCAL_PROC_DATA_PATH).joinpath(f"X_proc_{str(linesize)}_jsonlines.csv")
+        X_prepro.to_csv(path_X_prepro,index=False,sep=",")
 
-    ###on sauve cette df en local
-    path_X_prepro=Path(LOCAL_PROC_DATA_PATH).joinpath(f"X_proc_{str(linesize)}_linesize.csv")
-    X_prepro.to_csv(path_X_prepro,index=False,sep=",")
-
-    if saveraw==1:
-        X_raw=pd.concat([dftot_movies,dftot_book],ignore_index=True).fillna("$$$")
+    elif saveraw==1:
+        X_raw=pd.concat([dftot_movies_raw,dftot_book_raw],ignore_index=True).fillna("$$$")
         #on sauve cette df en local
-        path_X_raw=Path(LOCAL_PROC_DATA_PATH).joinpath(f"X_raw_{str(linesize)}_linesize.csv")
-        X_raw.to_csv(path_X_raw,index=False,sep=",")
+        path_X_prepro=Path(LOCAL_PROC_DATA_PATH).joinpath(f"X_raw_{str(linesize)}_jsonlines.csv")
+        X_raw.to_csv(path_X_prepro,index=False,sep=",")
 
 
 if __name__ == '__main__':
-    preprocess(saveraw=1)
+    preprocess(saveraw=0)
     # train()
     # pred()
