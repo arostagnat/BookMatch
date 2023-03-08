@@ -132,6 +132,6 @@ def preprocess(saveraw=0):
 
 
 if __name__ == '__main__':
-    preprocess(saveraw=0)
+    preprocess(saveraw=1)
     # train()
     # pred()
