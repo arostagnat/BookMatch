@@ -46,7 +46,7 @@ def Sample_data():
     return None
 
 
-def Cleaner(data, return_tokenize=True):
+def Cleaner(df, return_tokenize=True):
     """Cleaner
     Clean the reviews :
     Strip, lower, punctuations, tokenise, remove stop word, lemmatizing.
@@ -60,6 +60,8 @@ def Cleaner(data, return_tokenize=True):
         pd.DataFrame: the clean reviews
     """
 
+    data = df.copy()
+    data.replace({r'[^\x00-\x7F]+':''}, regex=True, inplace=True)
     final_data = data.copy()
 
     print("\nStart Cleaner ...\n")
@@ -71,13 +73,6 @@ def Cleaner(data, return_tokenize=True):
     print("Lower")
     data["txt"] = data["txt"].apply(lambda x : x.lower())
 
-    # On retire les nombres
-    print("Remove numbers")
-    temp = []
-    for text in data.txt:
-        temp.append("".join(word for word in text if not word.isdigit()))
-    data["txt"] = temp
-
     # On retire la ponctuations et caractères spéciaux (non-utf8)
     print("Remove punctuations")
     all_punctuation = string.punctuation + ""
@@ -86,6 +81,13 @@ def Cleaner(data, return_tokenize=True):
         for punctuation in all_punctuation:
             text = text.replace(punctuation, "")
         temp.append(text)
+    data["txt"] = temp
+
+    # On retire les nombres
+    print("Remove numbers")
+    temp = []
+    for text in data.txt:
+        temp.append("".join(word for word in text if not word.isdigit()))
     data["txt"] = temp
 
     # On tokenise
