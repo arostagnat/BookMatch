@@ -5,7 +5,7 @@ with open("requirements.txt") as f:
     content = f.readlines()
 requirements = [x.strip() for x in content if "git+" not in x]
 
-setup(name='BookMatch',
+setup(name='bookmatch',
       version="0.0.1",
       description="Book recommendation algorithm based on movie preferences",
       license="MIT",
