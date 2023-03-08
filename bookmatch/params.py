@@ -2,11 +2,11 @@ import os
 import numpy as np
 
 ##################  VARIABLES  ##################
-DATA_SIZE = "1k" # ["1k", "200k", "all"]
-CHUNK_SIZE = 200
+DATA_SIZE = 10_000 # prend les x premieres lignes du json
+CHUNK_SIZE = 1_000 # concat et clean chaque chunk de facon iterative
 
-LOCAL_RAW_DATA_PATH =os.path.join(os.path.dirname(__file__),"..","..","data","raw_data")
-LOCAL_PROC_DATA_PATH  =os.path.join(os.path.dirname(__file__),"..","..","data","proc_data")
+LOCAL_RAW_DATA_PATH =os.path.join(os.path.dirname(__file__),"..","data","raw_data")
+LOCAL_PROC_DATA_PATH  =os.path.join(os.path.dirname(__file__),"..","data","proc_data")
 
 # GCP_PROJECT = "<your project id>" # TO COMPLETE
 # GCP_PROJECT_WAGON = "wagon-public-datasets"

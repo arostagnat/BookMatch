@@ -7,95 +7,100 @@ from pathlib import Path
 # from dateutil.parser import parse
 from bookmatch.params import *
 
-def preprocess():
+def preprocess(saveraw=0):
     """
     Query and preprocess the raw dataset iteratively (by chunks).
     Then store the newly processed data on local hard-drive for later re-use.
-
-    - If raw data already exists on local disk:
-        - use `pd.read_csv(..., chunksize=CHUNK_SIZE)`
-
-    a coder :
-    - If raw data does not yet exists:
-        - use `bigquery.Client().query().result().to_dataframe_iterable()`
-
     """
 
-    from bookmatch.logic.data_v2 import Cleaner as clean
+    from bookmatch.logic.data import Cleaner as clean
+    from bookmatch.utils import flatten_txt
 
-
-    chksize=2000#CHUNK_SIZE
-    linesize=20000#DATA_SIZE
-
+    # on definit les path locaux raw ou on va piocher les data.json
     movie_rev_raw_path = Path(LOCAL_RAW_DATA_PATH).joinpath("raw_movies", "reviews.json")
     book_rev_raw_path = Path(LOCAL_RAW_DATA_PATH).joinpath("raw_book", "reviews.json")
 
+    # on definit les path locaux process pour stocker les proc_data.csv
     mov_proc_path = Path(LOCAL_PROC_DATA_PATH).joinpath("proc_movies")
     book_proc_path = Path(LOCAL_PROC_DATA_PATH).joinpath("proc_book")
-    # on cree les rep de preproc si pas deja fait
+
+    # on cree les rep de preproc en local si pas deja fait dans data/proc_data
     for pth in [mov_proc_path, book_proc_path]:
         if not os.path.exists(pth):
             os.makedirs(pth)
 
+    ########################################################
+    ########################################################
 
-    #on clean les rev de mov par chunk et on store 5 chunks par proc_test_i.csv
+    # on va traiter les data par chunks
+    chksize=CHUNK_SIZE
+    linesize=DATA_SIZE
+
+    ###  on fait deux readers pour movies et books
+
     readerm=pd.read_json(movie_rev_raw_path,
                     lines=True,chunksize=chksize,nrows=linesize,
                     encoding='utf-8', encoding_errors='replace')
-    dftot,dftemp,dftot2=None,None,None
-    i,p=1,0
-    for chunk in readerm:
-        dftemp=chunk.groupby("item_id", as_index=False).agg({"txt": " /// ".join})
-        if dftot is None:
-            dftot=dftemp
-            dftot2=dftemp
-        else:
-            dftot=pd.concat([dftot,dftemp],ignore_index=True) #concat vertical
-            dftot=dftot.groupby("item_id", as_index=False).agg({"txt": " /// ".join})
 
-            dftot2=pd.concat([dftot2,dftemp],ignore_index=True) #concat vertical
-            dftot2=dftot.groupby("item_id", as_index=False).agg({"txt": " /// ".join}) #concat txt par item_id
-        p+=1
-        ############## penser a coder clean par chunk et concat a la fin puis save
-        if p==5:
-            dftot=clean(dftot, return_tokenize=False)
-            pathsavec=Path(mov_proc_path).joinpath(f"testm_chunk{i}.csv")
-            dftot.to_csv(pathsavec,index=False,sep=",")
-
-            pathsave=Path(mov_proc_path).joinpath(f"nc_testm_chunk{i}.csv")
-            dftot2.to_csv(pathsave,index=False,sep=",")
-            dftot,dftot2=None,None
-            i+=1
-            p=0
-
-
-
-    #meme chose sur les livres
     readerb=pd.read_json(book_rev_raw_path,
                     lines=True,chunksize=chksize,nrows=linesize,
                     encoding='utf-8', encoding_errors='replace')
-    dftot,dftemp=None,None
-    i,p=1,0
-    for chunk in readerb:
-        dftemp=chunk.groupby("item_id", as_index=False).agg({"txt": " /// ".join})
-        if dftot is None:
-            dftot=dftemp
-        else:
-            dftot=pd.concat([dftot,dftemp],ignore_index=True) #concat vertical
-            dftot=dftot.groupby("item_id", as_index=False).agg({"txt": " /// ".join}) #concat txt par item_id
-        p+=1
-        if p==5:
-            dftot=clean(dftot, return_tokenize=False)
-            pathsave=Path(book_proc_path).joinpath(f"testb_chunk{i}.csv")
-            dftot.to_csv(pathsave,index=False,sep=",")
-            dftot=None
-            i+=1
-            p=0
+
+    # on traite le premier reader puis le second
+    readnum=1
+    for reader in [readerm,readerb]:
+        dftot=None
+        dftot_raw=None
+        for chunk in reader:
+            chunk_flat=None
+            #on concat les txt des item_id qui apparaissent dans plusieurs lignes
+            chunk_flat=flatten_txt(data=chunk,id="item_id",colname="txt")
+            chunk_flat_raw=chunk_flat.copy() #oblige de faire une copie du flatten_raw car le "clean" de romain ecrase la variable qu'on lui passe
+            ## on clean le chunk_flat
+            chunk_flat_clean=clean(chunk_flat, return_tokenize=False)
+
+            # on concat le chunk_flat_clean avec le precedent
+            if dftot is None:
+                dftot=chunk_flat_clean
+            else:
+                dftot=pd.concat([dftot,chunk_flat_clean],ignore_index=True) #concat vertical du tot avec le chunk clean
+                dftot=flatten_txt(data=dftot,id="item_id",colname="txt") # on regroupe par item_id
+
+            # rajout de concat des txt ra pour model bert de antoine
+            if saveraw==1:
+                if dftot_raw is None:
+                    dftot_raw=chunk_flat_raw
+                else:
+                    dftot_raw=pd.concat([dftot_raw,chunk_flat_raw],ignore_index=True) #concat vertical du tot avec le chunk clean
+                    dftot_raw=flatten_txt(data=dftot_raw,id="item_id",colname="txt")
+
+        # en sortant de cette boucle on a dftot (et deftot_raw)
+
+
+        #si c'est le premier passage on save les movies
+        if readnum==1:
+            path_csv_clean=Path(mov_proc_path).joinpath(f"mov_rev_clean_{str(linesize)}_linesize.csv")
+            dftot.to_csv(path_csv_clean,index=False,sep=",")
+            if saveraw==1:
+                path_csv_raw=Path(mov_proc_path).joinpath(f"mov_rev_raw_{str(linesize)}_linesize.csv")
+                dftot_raw.to_csv(path_csv_raw,index=False,sep=",")
+
+        #si c'est le second passage on save les books
+        elif readnum==2:
+            path_csv_clean=Path(book_proc_path).joinpath(f"book_rev_clean_{str(linesize)}_linesize.csv")
+            dftot.to_csv(path_csv_clean,index=False,sep=",")
+            if saveraw==1:
+                path_csv_raw=Path(book_proc_path).joinpath(f"book_rev_raw_{str(linesize)}_linesize.csv")
+                dftot_raw.to_csv(path_csv_raw,index=False,sep=",")
+
+
+        readnum+=1 #permet de passer au reader suivant quand on ecrit csv
+
 
 
 if __name__ == '__main__':
     try:
-        preprocess()
+        preprocess(saveraw=0)
         # train()
         # pred()
     except:
