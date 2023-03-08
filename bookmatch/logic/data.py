@@ -46,7 +46,7 @@ def Sample_data():
     return None
 
 
-def Cleaner(data, return_tokenize=True):
+def Cleaner(data, return_tokenize=True,meth_clean_numb2=0):
     """Cleaner
     Clean the reviews :
     Strip, lower, punctuations, tokenise, remove stop word, lemmatizing.
@@ -72,11 +72,20 @@ def Cleaner(data, return_tokenize=True):
     data["txt"] = data["txt"].apply(lambda x : x.lower())
 
     # On retire les nombres
-    print("Remove numbers")
-    temp = []
-    for text in data.txt:
-        temp.append("".join(word for word in text if not word.isdigit()))
-    data["txt"] = temp
+    if not meth_clean_numb2:
+        print("Remove numbers")
+        temp = []
+        for text in data.txt:
+            temp.append("".join(word for word in text if not word.isdigit()))
+        data["txt"] = temp
+
+    if meth_clean_numb2:
+        print("Remove numbers meth jeff")
+        remove_digits = str.maketrans('0123456789', '//////////')
+        temp = []
+        for text in data.txt:
+            temp.append("".join(text.translate(remove_digits)))
+        data["txt"] = temp
 
     # On retire la ponctuations et caractères spéciaux (non-utf8)
     print("Remove punctuations")
