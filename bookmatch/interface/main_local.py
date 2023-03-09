@@ -33,9 +33,9 @@ def preprocess(saveraw=0):
     ########################################################
 
     # on va traiter les data par chunks
-    chksize=100#CHUNK_SIZE # a tuner en fonction de la ram
-    # linesize=1_000#DATA_SIZE # sit tu veux tester sur les "linesize" premieres lignes du json
-    linesize="full"#DATA_SIZE   #si tu veux traiter le full json
+    chksize=1000#CHUNK_SIZE # a tuner en fonction de la ram
+    linesize=10_000#DATA_SIZE # sit tu veux tester sur les "linesize" premieres lignes du json
+    # linesize="full"#DATA_SIZE   #si tu veux traiter le full json
 
     ###  on fait deux readers pour movies et books
     if linesize == "full":
@@ -98,7 +98,7 @@ def preprocess(saveraw=0):
 
             elif saveraw==1:
                 dftot_movies_raw=dftot_raw.copy()
-                dftot_movies_raw.rename(columns={"item_id":"item_id_movie"})
+                dftot_movies_raw.rename(columns={"item_id":"item_id_movie"},inplace=True)
                 dftot_movies_raw['is_movie']=1
 
 
@@ -118,7 +118,7 @@ def preprocess(saveraw=0):
 
             elif saveraw==1:
                 dftot_book_raw=dftot_raw.copy()
-                dftot_book_raw.rename(columns={"item_id":"item_id_book"})
+                dftot_book_raw.rename(columns={"item_id":"item_id_book"},inplace=True)
                 dftot_book_raw['is_movie']=0
 
             # #### code qui sauv en local dans un .csv
@@ -145,8 +145,17 @@ def preprocess(saveraw=0):
         path_X_prepro=Path(LOCAL_PROC_DATA_PATH).joinpath(f"X_raw_{str(linesize)}_jsonlines.csv")
         X_raw.to_csv(path_X_prepro,index=False,sep=",")
 
+def cluster_bro():
+
+    from bookmatch.logic.model_cluster import cluster
+
+    cluster()
+
+
+
 
 if __name__ == '__main__':
-    preprocess(saveraw=0)
+    preprocess(saveraw=1)
+    # cluster_bro()
     # train()
     # pred()
