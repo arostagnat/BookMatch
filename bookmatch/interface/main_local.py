@@ -33,8 +33,8 @@ def preprocess(saveraw=0):
     ########################################################
 
     # on va traiter les data par chunks
-    chksize=1000#CHUNK_SIZE # a tuner en fonction de la ram
-    linesize=10_000#DATA_SIZE # sit tu veux tester sur les "linesize" premieres lignes du json
+    chksize=CHUNK_SIZE # a tuner en fonction de la ram
+    linesize=DATA_SIZE # sit tu veux tester sur les "linesize" premieres lignes du json
     # linesize="full"#DATA_SIZE   #si tu veux traiter le full json
 
     ###  on fait deux readers pour movies et books
@@ -133,29 +133,35 @@ def preprocess(saveraw=0):
 
     if saveraw==0:
         ### on concat mov et book
-        X_prepro=pd.concat([dftot_movies,dftot_book],ignore_index=True).fillna("$$$")
+        X_prepro=pd.concat([dftot_movies,dftot_book],ignore_index=True).fillna("-1")
 
         ###on sauve cette df en local
         path_X_prepro=Path(LOCAL_PROC_DATA_PATH).joinpath(f"X_proc_{str(linesize)}_jsonlines.csv")
         X_prepro.to_csv(path_X_prepro,index=False,sep=",")
 
     elif saveraw==1:
-        X_raw=pd.concat([dftot_movies_raw,dftot_book_raw],ignore_index=True).fillna("$$$")
+        X_raw=pd.concat([dftot_movies_raw,dftot_book_raw],ignore_index=True).fillna("-1")
         #on sauve cette df en local
         path_X_prepro=Path(LOCAL_PROC_DATA_PATH).joinpath(f"X_raw_{str(linesize)}_jsonlines.csv")
         X_raw.to_csv(path_X_prepro,index=False,sep=",")
 
-def cluster_bro():
-
-    from bookmatch.logic.model_cluster import cluster
-
-    cluster()
 
 
+
+def cluster_bro(csv):
+
+    from bookmatch.logic.model_cluster import clusterbert
+
+    X_cluster=clusterbert(csv)
+    path_X_cluster=Path(LOCAL_PROC_DATA_PATH).joinpath("cluster_result")
+    filename_x_cluster=Path(path_X_cluster).joinpath(f"X_cluster_{str(N_CLUSTER)}.csv")
+    if not path_X_cluster.exists():
+        os.makedirs(path_X_cluster)
+    X_cluster.to_csv(filename_x_cluster,index=False,sep=",")
 
 
 if __name__ == '__main__':
-    preprocess(saveraw=1)
-    # cluster_bro()
-    # train()
-    # pred()
+    # preprocess(saveraw=1)
+    # cluster_bro(csv=f"X_raw_{str(DATA_SIZE)}_jsonlines.csv")
+    # postprocessing()
+    pass
