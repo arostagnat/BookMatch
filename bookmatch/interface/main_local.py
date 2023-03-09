@@ -20,6 +20,10 @@ def preprocess(saveraw=0):
     movie_rev_raw_path = Path(LOCAL_RAW_DATA_PATH).joinpath("raw_movies", "reviews.json")
     book_rev_raw_path = Path(LOCAL_RAW_DATA_PATH).joinpath("raw_book", "reviews.json")
 
+    #on cree le path proc s'il existe pas
+    if not Path(LOCAL_PROC_DATA_PATH).exists():
+        os.makedirs(LOCAL_PROC_DATA_PATH)
+
     # on definit les path locaux process pour stocker les proc_data.csv
     # mov_proc_path = Path(LOCAL_PROC_DATA_PATH).joinpath("proc_movies")
     # book_proc_path = Path(LOCAL_PROC_DATA_PATH).joinpath("proc_book")
@@ -133,14 +137,14 @@ def preprocess(saveraw=0):
 
     if saveraw==0:
         ### on concat mov et book
-        X_prepro=pd.concat([dftot_movies,dftot_book],ignore_index=True).fillna("-1")
+        X_prepro=pd.concat([dftot_movies,dftot_book],ignore_index=True).fillna(-1.).astype({'item_id_movie':'float64', 'txt':'str', 'is_movie':'float64', 'item_id_book':'float64'})
 
         ###on sauve cette df en local
         path_X_prepro=Path(LOCAL_PROC_DATA_PATH).joinpath(f"X_proc_{str(linesize)}_jsonlines.csv")
         X_prepro.to_csv(path_X_prepro,index=False,sep=",")
 
     elif saveraw==1:
-        X_raw=pd.concat([dftot_movies_raw,dftot_book_raw],ignore_index=True).fillna("-1")
+        X_raw=pd.concat([dftot_movies_raw,dftot_book_raw],ignore_index=True).fillna(-1.).astype({'item_id_movie':'float64', 'txt':'str', 'is_movie':'float64', 'item_id_book':'float64'})
         #on sauve cette df en local
         path_X_prepro=Path(LOCAL_PROC_DATA_PATH).joinpath(f"X_raw_{str(linesize)}_jsonlines.csv")
         X_raw.to_csv(path_X_prepro,index=False,sep=",")
@@ -161,7 +165,7 @@ def cluster_bro(csv):
 
 
 if __name__ == '__main__':
-    # preprocess(saveraw=1)
+    preprocess(saveraw=0)
     # cluster_bro(csv=f"X_raw_{str(DATA_SIZE)}_jsonlines.csv")
     # postprocessing()
     pass
