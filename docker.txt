@@ -1,0 +1,11 @@
+echo $GOOGLE_APPLICATION_CREDENTIALS
+>>> /home/arostagnat/bookmatch.json
+
+GCR_REGION=eu.gcr.io
+GCP_PROJECT_ID=bookmatch-380010
+DOCKER_IMAGE_NAME=bookmatchv1
+
+docker build -t eu.gcr.io/bookmatch-380010/bookmatchv1 .
+docker run -e PORT=8000 -p 8000:8000 eu.gcr.io/bookmatch-380010/bookmatchv1
+docker push eu.gcr.io/bookmatch-380010/bookmatchv1
+gcloud run deploy --image eu.gcr.io/bookmatch-380010/bookmatchv1 --region europe-west1
