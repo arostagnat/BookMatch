@@ -108,6 +108,7 @@ def get_local_reccs(csvcluster,user_movies:list):
     print("Inputted films")
     print(movies)
     print(recommendations["title_book"])
+    return recommendations["title_book"]
 
 def get_global_reccs(csvcluster,user_movies:list):
 
