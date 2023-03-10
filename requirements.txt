@@ -40,6 +40,7 @@ psycopg2-binary
 fastapi==0.92.0
 pytz
 uvicorn==0.20.0
+openai==0.27.1
 # tests
 httpx
 pytest-asyncio
