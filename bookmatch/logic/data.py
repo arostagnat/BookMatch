@@ -46,6 +46,59 @@ def Sample_data():
     return None
 
 
+def Cleaner_light(df, list_stop_words=None, see_evolution=False):
+    """Cleaner_light
+
+    Args:
+        df (pd.DataFrame): need a column txt for the process
+        list_stop_words (list(str), optional): a list for remove a few word. Defaults to None.
+        see_evolution (bool, optional): print the evolution of the function. Defaults to False.
+
+    Returns:
+        pd.DataFrame: return the DataFrame processed
+    """
+    # Initialisation
+    if see_evolution:
+        print("\nStart Cleaner_light ... 🏃\nInitialisation ...\n")
+
+    # Liste de ponctuation conservée -> !&'(),-.:=?`
+    # Liste de ponctuation supprimée -> "#$%*+/;<>@[\]^_`{|}~
+    punctuation = string.punctuation + ""
+    punctuation.replace("!&'(),-.:=?`", "")
+
+    # Transformation des stop words, copie et ajout d'une majuscule :
+    # film --> film, Film
+    if list_stop_words:
+        list_stop_words_process = []
+        for word in list_stop_words:
+            list_stop_words_process.append(word)
+            list_stop_words_process.append(word.capitalize())
+
+    # Run cleaner
+    if see_evolution:
+        print("Run process ...")
+
+    df.replace({r"[^\x00-\x7F]+":""}, regex=True, inplace=True)
+    df.replace(punctuation, "")
+
+    df.txt = [word_tokenize(text) for text in df.txt]
+    if list_stop_words:
+        out_list = []
+        for text in df.txt:
+            out_text = []
+            for word in text:
+                if not word in list_stop_words_process:
+                    out_text.append(word)
+            out_list.append(" ".join(out_text))
+        df.txt = out_list
+
+    if see_evolution:
+        print("\n✅ Cleaner_light is done !\n")
+
+    return df
+
+
+
 
 def Cleaner(df, return_tokenize=True, jeff_method=0):
     """Cleaner
@@ -150,22 +203,27 @@ def Cleaner(df, return_tokenize=True, jeff_method=0):
 
 # Test only
 if __name__ == "__main__":
-    print("\nStart test 🏃\n\n")
+    # print("\nStart test 🏃\n\n")
 
-    # Test de Sample_data
-    print("Start test Sample_data")
-    Sample_data()
+    # # Test de Sample_data
+    # print("Start test Sample_data")
+    # Sample_data()
 
-    # Test de Cleaner
-    print("\nStart test Cleaner\n")
-    data = pd.read_json("raw_data/sample_movies_reviews.json")
-    data = Cleaner(data, return_tokenize=True)
-    data.to_json("raw_data/sample_movies_reviews_clean.json")
+    # # Test de Cleaner
+    # print("\nStart test Cleaner\n")
+    # data = pd.read_json("raw_data/sample_movies_reviews.json")
+    # data = Cleaner(data, return_tokenize=True)
+    # data.to_json("raw_data/sample_movies_reviews_clean.json")
 
-    data2 = pd.read_json("raw_data/sample_books_reviews.json")
-    data2 = Cleaner(data2, return_tokenize=True)
-    data2.to_json("raw_data/sample_books_reviews_clean.json")
+    # data2 = pd.read_json("raw_data/sample_books_reviews.json")
+    # data2 = Cleaner(data2, return_tokenize=True)
+    # data2.to_json("raw_data/sample_books_reviews_clean.json")
 
-    print("✅ Data save\n")
+    # print("✅ Data save\n")
 
-    print("✅ End test ! 🙌\n")
+    # print("✅ End test ! 🙌\n")
+    # df = pd.DataFrame({"col1": [1,2,3], "txt": ["texte1 texte1.2", "texte2 texte2.2", "texte3 texte3.2"]})
+    # print(df)
+    # data = Cleaner_light(df=df, list_stop_words=["texte1"], see_evolution=True)
+    # print(data)
+    pass
