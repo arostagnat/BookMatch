@@ -37,21 +37,21 @@ def root():
 
 
 
-if __name__== "__main__":
+# if __name__== "__main__":
 
-    url = 'http://localhost:8000/predict'
+#     url = 'http://localhost:8000/predict'
 
-    # pour le moment postprocessing prend des item_id_movie en entree
-    movie_list = ["1","2","3","4","5","6","7","8","9","10",
-                  "11","12","13","14","15","16","17","18","19","20"]
-    # movie_list = ["1"]
+#     # pour le moment postprocessing prend des item_id_movie en entree
+#     movie_list = ["1","2","3","4","5","6","7","8","9","10",
+#                   "11","12","13","14","15","16","17","18","19","20"]
+#     # movie_list = ["1"]
 
-    texte = "$$$$$".join(movie_list)
-    params = {"movie_list":texte}
+#     texte = "$$$$$".join(movie_list)
+#     params = {"movie_list":texte}
 
-    #test pour debug
-    # predict(movie_list=params)
+#     #test pour debug
+#     # predict(movie_list=params)
 
-    # partie avec api
-    response = requests.get(url, params=params)
-    print(response.json())
+#     # partie avec api
+#     response = requests.get(url, params=params)
+#     print(response.json())
