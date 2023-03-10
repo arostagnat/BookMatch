@@ -1,10 +1,12 @@
 import streamlit as st
 import pandas as pd
-import datetime
 import requests
+import os
+from pathlib import Path
 
-URL = "/Users/egmac/code/arostagnat/BookMatch/data/raw_data/raw_movies/metadata.json"
-metadata_movies = pd.read_json(URL,lines = True)
+local_raw_data_path = Path(__file__).parents[2].joinpath("data/raw_data")
+file_path = Path(local_raw_data_path).joinpath("raw_movies/metadata.json")
+metadata_movies = pd.read_json(file_path,lines = True)
 
 st.title("BookMatch")
 st.markdown("""
