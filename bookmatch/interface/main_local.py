@@ -170,8 +170,8 @@ def postprocessing(csvcluster,user_movies):
     from bookmatch.logic.recommendation import get_global_reccs,get_local_reccs
 
     reco=get_local_reccs(csvcluster,user_movies)
-    reco2=get_global_reccs(csvcluster,user_movies)
-
+    # reco2=get_global_reccs(csvcluster,user_movies)
+    return reco
 
 if __name__ == '__main__':
 
