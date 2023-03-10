@@ -2,15 +2,17 @@ import os
 import numpy as np
 
 ##################  VARIABLES  ##################
-DATA_SIZE = 1_000 # prend les x premieres lignes du json; peut prendre "full" avec un string
-CHUNK_SIZE = 100 # concat et clean chaque chunk de facon iterative
+DATA_SIZE = 2_500 # prend les x premieres lignes du json; peut prendre "full" avec un string
+CHUNK_SIZE = 1000 # concat et clean chaque chunk de facon iterative
+
+CLEANTYPE=1 # 0: full clean ou 1:raw version pour bert
 
 LOCAL_RAW_DATA_PATH =os.path.join(os.path.dirname(__file__),"..","data","raw_data")
 LOCAL_PROC_DATA_PATH  =os.path.join(os.path.dirname(__file__),"..","data","proc_data")
 
 N_CLUSTER = 69
 
-STOPWORDS= ["film","movie","book"]
+STOPWORDS= ["film","movie","book"] # pas utilise encore
 
 # GCP_PROJECT = "<your project id>" # TO COMPLETE
 # GCP_PROJECT_WAGON = "wagon-public-datasets"
