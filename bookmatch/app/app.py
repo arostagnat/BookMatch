@@ -11,8 +11,7 @@ from pathlib import Path
 local_raw_data_path = Path(__file__).parents[2].joinpath("data/raw_data")
 file_path = Path(local_raw_data_path).joinpath("raw_movies/metadata.json")
 metadata_movies = pd.read_json(file_path,lines = True)
-#openai.api_key=OPENAI_API_KEY
-openai.api_key="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"
+openai.api_key=OPENAI_API_KEY
 
 
 st.set_page_config(
