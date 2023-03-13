@@ -92,6 +92,8 @@ def Cleaner_light(df, list_stop_words=None, see_evolution=False):
             out_list.append(" ".join(out_text))
         df.txt = out_list
 
+    df.dropna(inplace=True)
+
     if see_evolution:
         print("\n✅ Cleaner_light is done !\n")
 
