@@ -1,5 +1,4 @@
 import os
-import numpy as np
 
 ##################  VARIABLES  ##################
 DATA_SIZE = 2_500 # prend les x premieres lignes du json; peut prendre "full" avec un string
@@ -13,6 +12,23 @@ LOCAL_PROC_DATA_PATH  =os.path.join(os.path.dirname(__file__),"..","data","proc_
 N_CLUSTER = 69
 
 STOPWORDS= ["film","movie","book"] # pas utilise encore
+
+# Clef API pour google
+KEY_PATH = os.path.normpath(os.getenv("KEY_PATH"))
+GCP_PROJECT = os.getenv("GCP_PROJECT")
+PRIVATE_KEY_ID = os.getenv("PRIVATE_KEY_ID")
+PRIVATE_KEY = os.getenv("PRIVATE_KEY")
+CLIENT_EMAIL = os.getenv("CLIENT_EMAIL")
+CLIENT_ID = os.getenv("CLIENT_ID")
+AUTH_URI = os.getenv("AUTH_URI")
+TOKEN_URI = os.getenv("TOKEN_URI")
+AUTH_PROVIDER_X509_CERT_URL = os.getenv("AUTH_PROVIDER_X509_CERT_URL")
+CLIENT_X509_CERT_URL = os.getenv("CLIENT_X509_CERT_URL")
+
+GCP_REGION = os.getenv("GCP_REGION")
+
+# Clef api openAI
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # GCP_PROJECT = "<your project id>" # TO COMPLETE
 # GCP_PROJECT_WAGON = "wagon-public-datasets"
