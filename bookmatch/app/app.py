@@ -12,7 +12,7 @@ local_raw_data_path = Path(__file__).parents[2].joinpath("data/raw_data")
 file_path = Path(local_raw_data_path).joinpath("raw_movies/metadata.json")
 metadata_movies = pd.read_json(file_path,lines = True)
 #openai.api_key=OPENAI_API_KEY
-openai.api_key="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"
+openai.api_key=TOREPLACE
 
 
 st.set_page_config(
