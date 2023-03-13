@@ -12,7 +12,7 @@ LOCAL_PROC_DATA_PATH  =os.path.join(os.path.dirname(__file__),"..","data","proc_
 
 N_CLUSTER = 69
 
-STOPWORDS= ["film","movie","book"] # pas utilise encore
+STOPWORDS= ["film", "movie", "book", "read", "character"] # pas utilise encore
 
 # GCP_PROJECT = "<your project id>" # TO COMPLETE
 # GCP_PROJECT_WAGON = "wagon-public-datasets"
