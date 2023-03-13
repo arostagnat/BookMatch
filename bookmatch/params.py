@@ -7,8 +7,9 @@ CHUNK_SIZE = 1000 # concat et clean chaque chunk de facon iterative
 
 CLEANTYPE=1 # 0: full clean ou 1:raw version pour bert
 
-LOCAL_RAW_DATA_PATH =os.path.join(os.path.dirname(__file__),"..","data","raw_data")
-LOCAL_PROC_DATA_PATH  =os.path.join(os.path.dirname(__file__),"..","data","proc_data")
+LOCAL_RAW_DATA_PATH = os.path.join(os.path.dirname(__file__),"..","data","raw_data")
+LOCAL_PROC_DATA_PATH  = os.path.join(os.path.dirname(__file__),"..","data","proc_data")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 N_CLUSTER = 69
 
