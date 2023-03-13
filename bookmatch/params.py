@@ -6,12 +6,13 @@ CHUNK_SIZE = 20_000 # concat et clean chaque chunk de facon iterative
 
 CLEANTYPE=1 # 0: full clean ou 1:clean_light pour bert 2: raw_data group by item_id
 
-LOCAL_RAW_DATA_PATH =os.path.join(os.path.dirname(__file__),"..","data","raw_data")
-LOCAL_PROC_DATA_PATH  =os.path.join(os.path.dirname(__file__),"..","data","proc_data")
+LOCAL_RAW_DATA_PATH = os.path.join(os.path.dirname(__file__),"..","data","raw_data")
+LOCAL_PROC_DATA_PATH  = os.path.join(os.path.dirname(__file__),"..","data","proc_data")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 N_CLUSTER = 69
 
-STOPWORDS= ["film","movie","book"] # pas utilise encore
+STOPWORDS= ["film", "movie", "book", "read", "character"] # pas utilise encore
 
 # Clef API pour google
 KEY_PATH = os.path.normpath(os.getenv("KEY_PATH"))
