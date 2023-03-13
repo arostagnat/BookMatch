@@ -61,10 +61,10 @@ def Cleaner_light(df, list_stop_words=None, see_evolution=False):
     if see_evolution:
         print("\nStart Cleaner_light ... 🏃\nInitialisation ...\n")
 
-    # Liste de ponctuation conservée -> !&'(),-.:=?`
-    # Liste de ponctuation supprimée -> "#$%*+/;<>@[\]^_`{|}~
-    punctuation = string.punctuation + ""
-    punctuation.replace("!&'(),-.:=?`", "")
+    # Liste de ponctuation conservée -> !'(),-.:=?`
+    # Liste de ponctuation supprimée -> "&#$%*+/;<>@[\]^_{|}~
+    punctuation = string.punctuation + "`"
+    punctuation.replace("!'(),-.:=?`", "")
 
     # Transformation des stop words, copie et ajout d'une majuscule :
     # film --> film, Film
@@ -78,11 +78,12 @@ def Cleaner_light(df, list_stop_words=None, see_evolution=False):
     if see_evolution:
         print("Run process ...")
 
+    df.dropna(subset=["txt"], inplace=True)
     df.replace({r"[^\x00-\x7F]+":""}, regex=True, inplace=True)
-    df.replace(punctuation, "")
+    df.replace(list(punctuation), "")
 
-    df.txt = [word_tokenize(text) for text in df.txt]
     if list_stop_words:
+        df.txt = [text.split() for text in df.txt]
         out_list = []
         for text in df.txt:
             out_text = []
@@ -224,8 +225,19 @@ if __name__ == "__main__":
     # print("✅ Data save\n")
 
     # print("✅ End test ! 🙌\n")
-    # df = pd.DataFrame({"col1": [1,2,3], "txt": ["texte1 texte1.2", "texte2 texte2.2", "texte3 texte3.2"]})
+    # df = pd.DataFrame({"col1": [1,2,3], "txt": ["texte1\ntexte1.2\ntexte1.3", "texte2 texte2.2", "texte3 texte3.2"]})
     # print(df)
     # data = Cleaner_light(df=df, list_stop_words=["texte1"], see_evolution=True)
     # print(data)
+
+
+    # print("start")
+    # X_book_description = pd.read_json("metadata.json", lines=True)
+    # X_book_description.drop(columns=["url", "authors", "lang", "img", "year"], inplace=True)
+    # X_book_description.rename(columns={"description": "txt"},inplace=True)
+    # X_book_description.dropna(subset=["txt"], inplace=True)
+    # X_book_description_cleaned = Cleaner_light(X_book_description, list_stop_words=["movie"])
+    # X_book_description_cleaned.txt.to_csv("testout.csv")
+    # print("fin")
+
     pass
