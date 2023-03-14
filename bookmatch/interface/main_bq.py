@@ -28,8 +28,8 @@ def preprocess(cleantype):
 
     if not (os.path.isfile(movie_rev_raw_path) and os.path.isfile(book_rev_raw_path)):
         print("on va dowloader from bq")
-        df_raw_movies = download_data(bq_dataset="reviews", bq_table="movies_raw",data_size=linesize)
-        df_raw_books = download_data(bq_dataset="reviews", bq_table="books_raw",data_size=linesize)
+        df_raw_movies = download_data(bq_dataset="movies", bq_table="reviews",data_size=linesize)
+        df_raw_books = download_data(bq_dataset="books", bq_table="reviews",data_size=linesize)
 
         dataraw_movies_path = Path(LOCAL_RAW_DATA_PATH).joinpath("raw_movies")
         if not dataraw_movies_path.exists():
@@ -223,6 +223,26 @@ if __name__ == '__main__':
         except:
             X_cluster = cluster_bro(csv_prepro=csvprepro_filepath,csv_bert=csvbert_filepath)
         X_cluster.to_csv(csvbert_filepath,index=False,sep=",")
+
+    #post_processing
+
+    #on a besoin des json metadata
+    mov_metadata_filepath = Path(LOCAL_RAW_DATA_PATH).joinpath("raw_movies", "metadata.json")
+    book_metadata_filepath = Path(LOCAL_RAW_DATA_PATH).joinpath("raw_book", "metadata.json")
+    if not (os.path.isfile(mov_metadata_filepath) and os.path.isfile(book_metadata_filepath)):
+        print("on va dowloader les metadata books et movies from bq")
+        df_raw_metadata_movies = download_data(bq_dataset="movies", bq_table="metadata",data_size="full")
+        df_raw_metadata_movies.to_json(mov_metadata_filepath,orient="records",lines=True,date_format='iso')#, index=False, orient="table")
+
+        df_raw_metadata_books = download_data(bq_dataset="books", bq_table="metadata",data_size="full")
+        df_raw_metadata_books.to_json(book_metadata_filepath,orient="records",lines=True,date_format='iso')#, index=False, orient="table")
+
+    #input_liste_de_film
+    choice_movies=np.arange(20).tolist()
+
+    #post process
+    postprocessing(csvcluster=csvbert_filepath,user_movies=choice_movies)
+
 
     # #   il faudra coder une fonction qui choisit les item_id
     # choice_movies=np.arange(20).tolist()
