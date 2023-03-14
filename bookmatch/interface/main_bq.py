@@ -165,29 +165,19 @@ def preprocess(cleantype):
     return X_out
 
 
-def cluster_bro(csv_prepro):
+def cluster_bro(csv_prepro,csv_bert):
 
     from bookmatch.logic.model_cluster import clusterbert
-
-    # on va chercher le csv X_proc....csv
-    # deux possibilites soit on upload de bq
-    #soit il existe deja en local
 
     #clustering
     X_cluster=clusterbert(csv_prepro)
 
-    # on definit le nom du .csv bert et son path
-    path_X_cluster=Path(LOCAL_CSV_BERT_PATH)
-    csvname_cluster=f"X_bert_cluster_{str(N_CLUSTER)}.csv"
-    filename_x_cluster=Path(path_X_cluster).joinpath(csvname_cluster)
-
-    # on enregistre en local la dataframe "X_cluster" qui sort du model cluster
-    X_cluster.to_csv(filename_x_cluster,index=False,sep=",")
-
     # on upload sur bq
-    upload_data(data=X_cluster, bq_dataset="bert", bq_table=csvname_cluster[:-4])
+    bq_table = os.path.split(csv_bert)[-1][:-4]
+    upload_data(data=X_cluster, bq_dataset="bert", bq_table=bq_table)
 
-    return csvname_cluster#,X_cluster
+    # return csvname_cluster#,X_cluster
+    return X_cluster
 
 def postprocessing(csvcluster,user_movies):
     from bookmatch.logic.recommendation import get_global_reccs,get_local_reccs
@@ -227,8 +217,12 @@ if __name__ == '__main__':
     if not os.path.isfile(csvbert_filepath):
         if not Path(LOCAL_CSV_BERT_PATH).exists():
             os.makedirs(LOCAL_CSV_BERT_PATH)
-        cluster_bro(csvprepro_filepath)
-
+        try:
+            bq_table = os.path.split(csvbert_filepath)[-1][:-4]
+            X_cluster = download_data(bq_dataset="bert", bq_table=bq_table, data_size=DATA_SIZE)
+        except:
+            X_cluster = cluster_bro(csv_prepro=csvprepro_filepath,csv_bert=csvbert_filepath)
+        X_cluster.to_csv(csvbert_filepath,index=False,sep=",")
 
     # #   il faudra coder une fonction qui choisit les item_id
     # choice_movies=np.arange(20).tolist()
