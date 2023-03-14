@@ -6,9 +6,10 @@ from pathlib import Path
 
 def get_data(csvcluster):
     #on va chercher le csv cluster
-    path_X_cluster=Path(LOCAL_PROC_DATA_PATH).joinpath("cluster_result")
-    filename_x_cluster=Path(path_X_cluster).joinpath(csvcluster)
-    X_cluster=pd.read_csv(filename_x_cluster)
+    # path_X_cluster=Path(LOCAL_CSV_BERT_PATH).joinpath("cluster_result")
+    # filename_x_cluster=Path(path_X_cluster).joinpath(csvcluster)
+    # X_cluster=pd.read_csv(filename_x_cluster)
+    X_cluster=pd.read_csv(csvcluster)
 
     # on va chercher les meta mov
     # jsonmetamov="/Users/egmac/code/arostagnat/BookMatch/data/raw_data/raw_movies/metadata.json"
@@ -32,12 +33,15 @@ def post_processing(csvcluster):
     # metadata_movies = # pd.read_json("/Users/egmac/code/arostagnat/BookMatch/data/raw_data/raw_movies/metadata.json", lines=True)
     # metadata_books = # pd.read_json("/Users/egmac/code/arostagnat/BookMatch/data/raw_data/raw_book/metadata.json", lines=True)
     metadata_movies.rename({"item_id":"item_id_movie", "title":"title_movie"}, axis='columns',inplace=True)
-    metadata_books.rename({"item_id":"item_id_book", "title":"title_book","img":"img_book","url":"url_book"}, axis='columns',inplace=True)
+    # metadata_books.rename({"item_id":"item_id_book", "title":"title_book","img":"img_book","url":"url_book"}, axis='columns',inplace=True)
+    metadata_books.rename({"item_id":"item_id_book", "title":"title_book"}, axis='columns',inplace=True)
+
     metadata_movies.item_id_movie = metadata_movies.item_id_movie.astype(float)
     metadata_books.item_id_book = metadata_books.item_id_book.astype(float)
 
     X_all = pd.merge(X_cluster, metadata_movies[["title_movie","item_id_movie"]], on="item_id_movie", how="left")
-    X_all = pd.merge(X_all, metadata_books[["title_book","item_id_book","url_book","img_book"]], on="item_id_book", how="left")
+    # X_all = pd.merge(X_all, metadata_books[["title_book","item_id_book","url_book","img_book"]], on="item_id_book", how="left")
+    X_all = pd.merge(X_all, metadata_books[["title_book","item_id_book"]], on="item_id_book", how="left")
 
     return X_all
 
@@ -50,17 +54,23 @@ def vector_processing(df_post_processing):
     # In the current X_all, the vectors are inputted as lists, so they need to be converted
 
     for vector in vectors:
-        result = vector.strip('[]').replace("'","").replace(' ', '').split(',')
-        result = [float(i) for i in result]
+        result = vector.strip('[]').replace("\n","").replace("'","").replace(",","").split(' ')
+        result = [float(i) for i in result if i!='']
         vectors_revised.append(result)
+
+
+
+
     X_vectors = pd.DataFrame(vectors_revised)
 
-    n = 250
-    X_vectors_revised = pd.DataFrame(X_vectors.iloc[:,0:n])
+    # n = 250
+    # X_vectors_revised = pd.DataFrame(X_vectors.iloc[:,0:n])
 
-    X_vectors_revised[["item_id_movie","item_id_book","is_movie"]] = X_all[["item_id_movie","item_id_book","is_movie"]]
 
-    return X_vectors_revised
+    X_vectors[["item_id_movie","item_id_book","is_movie"]] = X_all[["item_id_movie","item_id_book","is_movie"]]
+
+    # return X_vectors_revised
+    return X_vectors
 
 def vector_movies_books(vector_revised):
 
@@ -82,7 +92,9 @@ def get_local_reccs(csvcluster,user_movies:list):
 
     verified_movies = [movie_id for movie_id in user_movies if movie_id in X_all.item_id_movie.tolist()]
 
-    recommendations = pd.DataFrame(columns=["similarity","title_book","img_book","url_book"])
+    # recommendations = pd.DataFrame(columns=["similarity","title_book","img_book","url_book"])
+    recommendations = pd.DataFrame(columns=["similarity","title_book","img_book"])
+
     movies = pd.DataFrame(verified_movies,columns=["item_id_movie"])
     movies = pd.merge(movies,X_all[["title_movie","item_id_movie"]],on="item_id_movie",how="left")
 
@@ -98,7 +110,9 @@ def get_local_reccs(csvcluster,user_movies:list):
         # Create summary table of books with their similarity and relevant details
         sim_books_detail = pd.DataFrame(sim_books,index=books_vectors.index,columns=["similarity"])
         sim_books_detail = sim_books_detail.sort_values("similarity",ascending=False)
-        sim_books_detail = pd.merge(sim_books_detail,X_all[["title_book","img_book","url_book","item_id_book"]],
+        # sim_books_detail = pd.merge(sim_books_detail,X_all[["title_book","img_book","url_book","item_id_book"]],
+        #                             on="item_id_book",how="left")
+        sim_books_detail = pd.merge(sim_books_detail,X_all[["title_book","item_id_book"]],
                                     on="item_id_book",how="left")
 
         # Add top book to recommendations dataframe
@@ -135,7 +149,8 @@ def get_global_reccs(csvcluster,user_movies:list):
     ## Create summary table of books with their similarity and relevant details
     sim_books_detail = pd.DataFrame(sim_books,index=books_vectors.index,columns=["similarity"])
     sim_books_detail = sim_books_detail.sort_values("similarity",ascending=False)
-    sim_books_detail = pd.merge(sim_books_detail,X_all[["title_book","img_book","url_book","item_id_book"]],on="item_id_book",how="left")
+    # sim_books_detail = pd.merge(sim_books_detail,X_all[["title_book","img_book","url_book","item_id_book"]],on="item_id_book",how="left")
+    sim_books_detail = pd.merge(sim_books_detail,X_all[["title_book","img_book","item_id_book"]],on="item_id_book",how="left")
 
     ## Take top 5 books and show results
     recommendations = sim_books_detail.head(5)

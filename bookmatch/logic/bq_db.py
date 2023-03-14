@@ -2,6 +2,7 @@ from google.cloud import bigquery
 from google.oauth2 import service_account
 from bookmatch.params import *
 import pandas as pd
+import os
 import json
 
 
@@ -99,18 +100,26 @@ def upload_data(data, bq_dataset, bq_table):
     return None
 
 
-def download_data(bq_dataset, bq_table):
+def download_data(bq_dataset, bq_table, data_size):
     print("\nRun download_data 🏃\n")
 
-    query = f"""
-    SELECT *
-    FROM {GCP_PROJECT}.{bq_dataset}.{bq_table}
-    """
+    if data_size != "full":
+        query = f"""
+        SELECT *
+        FROM {GCP_PROJECT}.{bq_dataset}.{bq_table}
+        LIMIT {data_size}
+        """
+    else:
+        query = f"""
+        SELECT *
+        FROM {GCP_PROJECT}.{bq_dataset}.{bq_table}
+        """
 
     client = load_client()
     query_job = client.query(query)
     result = query_job.result()
     print("\n✅ Download finish !")
+    print("\nConverting query result into Dataframe")
     return result.to_dataframe()
 
 
