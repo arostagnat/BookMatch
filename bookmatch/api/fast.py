@@ -46,8 +46,8 @@ def root():
 #     params = {"movie_list":texte}
 
 #     #test pour debug
-#     # predict(movie_list=params)
+#     predict(movie_list=params)
 
 #     # # partie avec api
-#     response = requests.get(url, params=params)
-#     print(response.json())
+#     # response = requests.get(url, params=params)
+#     # print(response.json())
