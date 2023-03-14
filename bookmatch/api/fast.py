@@ -10,8 +10,6 @@ app = FastAPI()
 
 # app.state.model = load_model()
 
-# http://127.0.0.1:8000/predict?pickup_datetime=2012-10-06 12:10:20&pickup_longitude=40.7614327&pickup_latitude=-73.9798156&dropoff_longitude=40.6513111&dropoff_latitude=-73.8803331&passenger_count=2
-
 @app.get("/predict")
 def predict(movie_list):
     # model = load_model()
