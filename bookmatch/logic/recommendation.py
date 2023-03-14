@@ -54,8 +54,8 @@ def vector_processing(df_post_processing):
     # In the current X_all, the vectors are inputted as lists, so they need to be converted
 
     for vector in vectors:
-        result = vector.strip('[]').replace("\n","").replace("'","").replace(' ', '').split(',')
-        result = [float(i) for i in result]
+        result = vector.strip('[]').replace("\n","").replace("'","").replace(",","").split(' ')
+        result = [float(i) for i in result if i!='']
         vectors_revised.append(result)
 
 
@@ -63,12 +63,14 @@ def vector_processing(df_post_processing):
 
     X_vectors = pd.DataFrame(vectors_revised)
 
-    n = 250
-    X_vectors_revised = pd.DataFrame(X_vectors.iloc[:,0:n])
+    # n = 250
+    # X_vectors_revised = pd.DataFrame(X_vectors.iloc[:,0:n])
 
-    X_vectors_revised[["item_id_movie","item_id_book","is_movie"]] = X_all[["item_id_movie","item_id_book","is_movie"]]
 
-    return X_vectors_revised
+    X_vectors[["item_id_movie","item_id_book","is_movie"]] = X_all[["item_id_movie","item_id_book","is_movie"]]
+
+    # return X_vectors_revised
+    return X_vectors
 
 def vector_movies_books(vector_revised):
 
@@ -110,7 +112,7 @@ def get_local_reccs(csvcluster,user_movies:list):
         sim_books_detail = sim_books_detail.sort_values("similarity",ascending=False)
         # sim_books_detail = pd.merge(sim_books_detail,X_all[["title_book","img_book","url_book","item_id_book"]],
         #                             on="item_id_book",how="left")
-        sim_books_detail = pd.merge(sim_books_detail,X_all[["title_book","img_book","item_id_book"]],
+        sim_books_detail = pd.merge(sim_books_detail,X_all[["title_book","item_id_book"]],
                                     on="item_id_book",how="left")
 
         # Add top book to recommendations dataframe

@@ -1,8 +1,8 @@
 import os
 
 ##################  VARIABLES  ##################
-DATA_SIZE = 500_000 # prend les x premieres lignes du json; peut prendre "full" avec un string
-CHUNK_SIZE = 10_000 # concat et clean chaque chunk de facon iterative
+DATA_SIZE = 10_200 # prend les x premieres lignes du json; peut prendre "full" avec un string
+CHUNK_SIZE = 5000 # concat et clean chaque chunk de facon iterative
 
 CLEANTYPE=1 # 0: full clean ou 1:clean_light pour bert 2: raw_data group by item_id
 
@@ -11,7 +11,7 @@ LOCAL_RAW_DATA_PATH =os.path.join(os.path.dirname(__file__),"..","data","raw_dat
 LOCAL_PROC_DATA_PATH  =os.path.join(os.path.dirname(__file__),"..","data","processed_data")
 LOCAL_CSV_BERT_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "bert_data")
 
-N_CLUSTER = 150
+N_CLUSTER = 99
 
 STOPWORDS= ["film","movie","book"] # pas utilise encore
 
