@@ -2,28 +2,26 @@ import pandas as pd
 from fastapi import FastAPI
 from bookmatch.logic import *
 from bookmatch.interface import *
-from bookmatch.interface.main_local import postprocessing
+from bookmatch.interface.main_bq import postprocessing
 import requests
 from bookmatch.params import *
+from pathlib import Path
 
 app = FastAPI()
 
-# app.state.model = load_model()
-
 @app.get("/predict")
 def predict(movie_list):
-    # model = load_model()
-    # assert model is not None
-    # book_list = app.state.model.predict(movie_list)
-    # print(movie_list)
-    csvname_cluster=f"X_bert_cluster_{str(N_CLUSTER)}.csv"
+
+    # csvname_cluster=f"X_bert_cluster_{str(N_CLUSTER)}.csv"
+    csvbert_filepath=Path(LOCAL_CSV_BERT_PATH).joinpath(f"X_bert_cluster_{str(N_CLUSTER)}.csv")
 
     # on retravaille movie list pour quil soit accepte par postprocessing
-    input_movie=movie_list.split("$$$$$")
+    input_movie=movie_list.split("$$$$$") # a garder pour mode offciel
+    # input_movie=movie_list["movie_list"].split("$$$$$") # mode debug
 
     input_movie=[int(elem) for elem in input_movie]
 
-    reco = postprocessing(csvcluster=csvname_cluster,user_movies=input_movie)
+    reco = postprocessing(csvcluster=csvbert_filepath,user_movies=input_movie)
 
     dico={"movie_list": input_movie,"book_list": list(reco.tolist())}
 
@@ -50,6 +48,6 @@ def root():
 #     #test pour debug
 #     # predict(movie_list=params)
 
-#     # partie avec api
+#     # # partie avec api
 #     response = requests.get(url, params=params)
 #     print(response.json())

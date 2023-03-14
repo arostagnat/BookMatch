@@ -182,6 +182,18 @@ def cluster_bro(csv_prepro,csv_bert):
 def postprocessing(csvcluster,user_movies):
     from bookmatch.logic.recommendation import get_global_reccs,get_local_reccs
 
+    #on a besoin des json metadata
+    mov_metadata_filepath = Path(LOCAL_RAW_DATA_PATH).joinpath("raw_movies", "metadata.json")
+    book_metadata_filepath = Path(LOCAL_RAW_DATA_PATH).joinpath("raw_book", "metadata.json")
+    if not (os.path.isfile(mov_metadata_filepath) and os.path.isfile(book_metadata_filepath)):
+        print("on va dowloader les metadata books et movies from bq")
+        df_raw_metadata_movies = download_data(bq_dataset="movies", bq_table="metadata",data_size="full")
+        df_raw_metadata_movies.to_json(mov_metadata_filepath,orient="records",lines=True,date_format='iso')#, index=False, orient="table")
+
+        df_raw_metadata_books = download_data(bq_dataset="books", bq_table="metadata",data_size="full")
+        df_raw_metadata_books.to_json(book_metadata_filepath,orient="records",lines=True,date_format='iso')#, index=False, orient="table")
+
+
     reco=get_local_reccs(csvcluster,user_movies)
     # reco2=get_global_reccs(csvcluster,user_movies)
     return reco
