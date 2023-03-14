@@ -182,7 +182,37 @@ def cluster_bro(csv_prepro,csv_bert):
 def postprocessing(csvcluster,user_movies):
     from bookmatch.logic.recommendation import get_global_reccs,get_local_reccs
 
-    #on a besoin des json metadata
+    ###############################################
+    # MODIF POSTRPROCESS WITH API
+
+    if not Path(LOCAL_DATA_PATH).exists():
+        os.makedirs(Path(LOCAL_DATA_PATH))
+
+    if not Path(LOCAL_PROC_DATA_PATH).exists():
+            os.makedirs(LOCAL_PROC_DATA_PATH)
+
+    dataraw_movies_path = Path(LOCAL_RAW_DATA_PATH).joinpath("raw_movies")
+    if not dataraw_movies_path.exists():
+        os.makedirs(dataraw_movies_path)
+
+    dataraw_books_path = Path(LOCAL_RAW_DATA_PATH).joinpath("raw_book")
+    if not dataraw_books_path.exists():
+        os.makedirs(dataraw_books_path)
+
+    if not Path(LOCAL_CSV_BERT_PATH).exists():
+            os.makedirs(LOCAL_CSV_BERT_PATH)
+
+
+
+    # on prend xbert sur bq
+    csvbert_filepath=Path(LOCAL_CSV_BERT_PATH).joinpath(f"X_bert_cluster_{str(N_CLUSTER)}.csv")
+    if not os.path.isfile(csvbert_filepath):
+        # On a besoin du Xbert sur BQ s'il existe pas
+        bq_table = os.path.split(csvbert_filepath)[-1][:-4]
+        X_cluster = download_data(bq_dataset="bert", bq_table=bq_table, data_size=DATA_SIZE)
+        X_cluster.to_csv(csvbert_filepath,index=False,sep=",")
+
+    #on a besoin des json metadata sur bq
     mov_metadata_filepath = Path(LOCAL_RAW_DATA_PATH).joinpath("raw_movies", "metadata.json")
     book_metadata_filepath = Path(LOCAL_RAW_DATA_PATH).joinpath("raw_book", "metadata.json")
     if not (os.path.isfile(mov_metadata_filepath) and os.path.isfile(book_metadata_filepath)):
@@ -193,6 +223,7 @@ def postprocessing(csvcluster,user_movies):
         df_raw_metadata_books = download_data(bq_dataset="books", bq_table="metadata",data_size="full")
         df_raw_metadata_books.to_json(book_metadata_filepath,orient="records",lines=True,date_format='iso')#, index=False, orient="table")
 
+    ###############################################
 
     reco=get_local_reccs(csvcluster,user_movies)
     # reco2=get_global_reccs(csvcluster,user_movies)
