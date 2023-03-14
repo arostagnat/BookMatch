@@ -1,7 +1,7 @@
-#FROM python:3.10.6-buster
-FROM tensorflow/tensorflow:2.10.0
+FROM python:3.10.6-buster
+#FROM tensorflow/tensorflow:2.10.0
 
-COPY requirements.txt /requirements.txt
+COPY requirements_prod.txt /requirements.txt
 COPY bookmatch /bookmatch
 
 RUN pip install --upgrade pip
