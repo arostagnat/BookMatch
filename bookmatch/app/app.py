@@ -38,13 +38,19 @@ with st.form(key='params_for_api'):
     movie_titles = st.multiselect("What are some of your favorite movies?",
                                  movie_title_selection,max_selections=10) ### TODO remove 10 max selections and make the choice less laggy
 
+
     if st.form_submit_button('Get my books'):
 
         movie_ids = [metadata_movies[metadata_movies.title == title].item_id.values[0] for title in movie_titles]
 
+        for i, e in enumerate(movie_ids):
+            movie_ids[i] = str(e)
+
+        movie_ids_list = '$$$$$'.join(movie_ids)
+
         # Add API url below
         bookmatch_url = 'http://localhost:8000/predict'
-        response = requests.get(bookmatch_url, params={"movie_list":movie_ids})
+        response = requests.get(bookmatch_url, params={"movie_list":movie_ids_list})
         prediction = response.json()
 
         with st.spinner('Searching for your recommendations...'):
@@ -53,7 +59,7 @@ with st.form(key='params_for_api'):
             if prediction.get("book_list"):
                 st.markdown(f"### Your :blue[book] recommendations are:")
                 for book in prediction["book_list"]:
-                    st.markdown(f'#### -{book}')
+                    st.markdown(f'#### {book}')
 
         with st.spinner("**:red[Chat GPT]** is generating an explanation..."):
 
