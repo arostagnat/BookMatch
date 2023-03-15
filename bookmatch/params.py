@@ -11,6 +11,7 @@ LOCAL_DATA_PATH=os.path.join(os.path.dirname(__file__),"..","data")
 LOCAL_RAW_DATA_PATH =os.path.join(os.path.dirname(__file__),"..","data","raw_data")
 LOCAL_PROC_DATA_PATH  =os.path.join(os.path.dirname(__file__),"..","data","processed_data")
 LOCAL_CSV_BERT_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "bert_data")
+LOCAL_CSV_POSTPROCESS_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "post_process_data")
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 

@@ -2,7 +2,7 @@ import pandas as pd
 from fastapi import FastAPI
 from bookmatch.logic import *
 from bookmatch.interface import *
-from bookmatch.interface.main_bq import postprocessing
+from bookmatch.interface.main_bq import postprocessing,reco_api
 import requests
 from bookmatch.params import *
 from pathlib import Path
@@ -13,7 +13,7 @@ app = FastAPI()
 def predict(movie_list):
 
     # csvname_cluster=f"X_bert_cluster_{str(N_CLUSTER)}.csv"
-    csvbert_filepath=Path(LOCAL_CSV_BERT_PATH).joinpath(f"X_bert_cluster_{str(N_CLUSTER)}.csv")
+    # csvbert_filepath=Path(LOCAL_CSV_BERT_PATH).joinpath(f"X_bert_cluster_{str(N_CLUSTER)}.csv")
 
     # on retravaille movie list pour quil soit accepte par postprocessing
     input_movie=movie_list.split("$$$$$") # a garder pour mode offciel
@@ -21,7 +21,8 @@ def predict(movie_list):
 
     input_movie=[int(elem) for elem in input_movie]
 
-    reco = postprocessing(csvcluster=csvbert_filepath,user_movies=input_movie)
+    # reco = postprocessing(csvcluster=csvbert_filepath,user_movies=input_movie)
+    reco = reco_api(user_movies=input_movie)
 
     dico={"movie_list": input_movie,"book_list": list(reco.tolist())}
 
