@@ -179,113 +179,139 @@ def cluster_bro(csv_prepro,csv_bert):
     # return csvname_cluster#,X_cluster
     return X_cluster
 
-def postprocessing(csvcluster,user_movies):
-    from bookmatch.logic.recommendation import get_global_reccs,get_local_reccs
+def postprocessing(csvcluster):
+    from bookmatch.logic.recommendation import get_global_reccs,get_local_reccs,before_recs
 
     ###############################################
-    # MODIF POSTRPROCESS WITH API
+    # # MODIF POSTRPROCESS WITH API
 
-    if not Path(LOCAL_DATA_PATH).exists():
-        os.makedirs(Path(LOCAL_DATA_PATH))
+    # if not Path(LOCAL_DATA_PATH).exists():
+    #     os.makedirs(Path(LOCAL_DATA_PATH))
 
-    if not Path(LOCAL_PROC_DATA_PATH).exists():
-            os.makedirs(LOCAL_PROC_DATA_PATH)
+    # if not Path(LOCAL_PROC_DATA_PATH).exists():
+    #         os.makedirs(LOCAL_PROC_DATA_PATH)
 
-    dataraw_movies_path = Path(LOCAL_RAW_DATA_PATH).joinpath("raw_movies")
-    if not dataraw_movies_path.exists():
-        os.makedirs(dataraw_movies_path)
+    # dataraw_movies_path = Path(LOCAL_RAW_DATA_PATH).joinpath("raw_movies")
+    # if not dataraw_movies_path.exists():
+    #     os.makedirs(dataraw_movies_path)
 
-    dataraw_books_path = Path(LOCAL_RAW_DATA_PATH).joinpath("raw_book")
-    if not dataraw_books_path.exists():
-        os.makedirs(dataraw_books_path)
+    # dataraw_books_path = Path(LOCAL_RAW_DATA_PATH).joinpath("raw_book")
+    # if not dataraw_books_path.exists():
+    #     os.makedirs(dataraw_books_path)
 
-    if not Path(LOCAL_CSV_BERT_PATH).exists():
-            os.makedirs(LOCAL_CSV_BERT_PATH)
+    # if not Path(LOCAL_CSV_BERT_PATH).exists():
+    #         os.makedirs(LOCAL_CSV_BERT_PATH)
 
 
 
-    # on prend xbert sur bq
-    csvbert_filepath=Path(LOCAL_CSV_BERT_PATH).joinpath(f"X_bert_cluster_{str(N_CLUSTER)}.csv")
-    if not os.path.isfile(csvbert_filepath):
-        # On a besoin du Xbert sur BQ s'il existe pas
-        bq_table = os.path.split(csvbert_filepath)[-1][:-4]
-        X_cluster = download_data(bq_dataset="bert", bq_table=bq_table, data_size=DATA_SIZE)
-        X_cluster.to_csv(csvbert_filepath,index=False,sep=",")
+    # # on prend xbert sur bq
+    # csvbert_filepath=Path(LOCAL_CSV_BERT_PATH).joinpath(f"X_bert_cluster_{str(N_CLUSTER)}.csv")
+    # if not os.path.isfile(csvbert_filepath):
+    #     # On a besoin du Xbert sur BQ s'il existe pas
+    #     bq_table = os.path.split(csvbert_filepath)[-1][:-4]
+    #     X_cluster = download_data(bq_dataset="bert", bq_table=bq_table, data_size=DATA_SIZE)
+    #     X_cluster.to_csv(csvbert_filepath,index=False,sep=",")
 
-    #on a besoin des json metadata sur bq
-    mov_metadata_filepath = Path(LOCAL_RAW_DATA_PATH).joinpath("raw_movies", "metadata.json")
-    book_metadata_filepath = Path(LOCAL_RAW_DATA_PATH).joinpath("raw_book", "metadata.json")
-    if not (os.path.isfile(mov_metadata_filepath) and os.path.isfile(book_metadata_filepath)):
-        print("on va dowloader les metadata books et movies from bq")
-        df_raw_metadata_movies = download_data(bq_dataset="movies", bq_table="metadata",data_size="full")
-        df_raw_metadata_movies.to_json(mov_metadata_filepath,orient="records",lines=True,date_format='iso')#, index=False, orient="table")
+    # #on a besoin des json metadata sur bq
+    # mov_metadata_filepath = Path(LOCAL_RAW_DATA_PATH).joinpath("raw_movies", "metadata.json")
+    # book_metadata_filepath = Path(LOCAL_RAW_DATA_PATH).joinpath("raw_book", "metadata.json")
+    # if not (os.path.isfile(mov_metadata_filepath) and os.path.isfile(book_metadata_filepath)):
+    #     print("on va dowloader les metadata books et movies from bq")
+    #     df_raw_metadata_movies = download_data(bq_dataset="movies", bq_table="metadata",data_size="full")
+    #     df_raw_metadata_movies.to_json(mov_metadata_filepath,orient="records",lines=True,date_format='iso')#, index=False, orient="table")
 
-        df_raw_metadata_books = download_data(bq_dataset="books", bq_table="metadata",data_size="full")
-        df_raw_metadata_books.to_json(book_metadata_filepath,orient="records",lines=True,date_format='iso')#, index=False, orient="table")
+    #     df_raw_metadata_books = download_data(bq_dataset="books", bq_table="metadata",data_size="full")
+    #     df_raw_metadata_books.to_json(book_metadata_filepath,orient="records",lines=True,date_format='iso')#, index=False, orient="table")
 
     ###############################################
 
-    reco=get_local_reccs(csvcluster,user_movies)
-    # reco2=get_global_reccs(csvcluster,user_movies)
+
+    filename1=Path(LOCAL_CSV_POSTPROCESS_PATH).joinpath("X_all.csv")
+    filename2=Path(LOCAL_CSV_POSTPROCESS_PATH).joinpath("X_vect_b.csv")
+    filename3=Path(LOCAL_CSV_POSTPROCESS_PATH).joinpath("X_vect_m.csv")
+
+    if not (os.path.isfile(filename1) and os.path.isfile(filename2) and os.path.isfile(filename3)):
+        if not Path(LOCAL_CSV_POSTPROCESS_PATH).exists():
+            os.makedirs(Path(LOCAL_CSV_POSTPROCESS_PATH))
+
+
+        X_all,X_vectors_books,X_vectors_movies=before_recs(csvcluster)
+
+
+        X_all.to_csv(filename1,index=False,sep=",")
+        X_vectors_books.to_csv(filename2,index=True,sep=",")
+        X_vectors_movies.to_csv(filename3,index=True,sep=",")
+        # reco=get_local_reccs(csvcluster,user_movies)
+        # reco2=get_global_reccs(csvcluster,user_movies)
+    pass
+
+def reco_api(user_movies):
+    from bookmatch.logic.recommendation import get_global_reccs,get_local_reccs,before_recs
+
+    # reco=get_local_reccs(user_movies)
+    reco=get_global_reccs(user_movies)
+    # pass
     return reco
+
 
 if __name__ == '__main__':
 
-    # creation rep data si existe pas (necessaire pour clef api json)
-    if not Path(LOCAL_DATA_PATH).exists():
-        os.makedirs(Path(LOCAL_DATA_PATH))
+    # # creation rep data si existe pas (necessaire pour clef api json)
+    # if not Path(LOCAL_DATA_PATH).exists():
+    #     os.makedirs(Path(LOCAL_DATA_PATH))
 
-    #on regarde si les data processed existent deja en local
-    # processed_data peut prendre deux noms selon le choix du cleaner
-    if CLEANTYPE == (0|1):
-        csvprepro_filepath=Path(LOCAL_PROC_DATA_PATH).joinpath(f"X_proc_{str(DATA_SIZE)}_jsonlines.csv")
-    elif CLEANTYPE == 2:
-        csvprepro_filepath=Path(LOCAL_PROC_DATA_PATH).joinpath(f"X_raw_{str(DATA_SIZE)}_jsonlines.csv")
+    # #on regarde si les data processed existent deja en local
+    # # processed_data peut prendre deux noms selon le choix du cleaner
+    # if CLEANTYPE == (0|1):
+    #     csvprepro_filepath=Path(LOCAL_PROC_DATA_PATH).joinpath(f"X_proc_{str(DATA_SIZE)}_jsonlines.csv")
+    # elif CLEANTYPE == 2:
+    #     csvprepro_filepath=Path(LOCAL_PROC_DATA_PATH).joinpath(f"X_raw_{str(DATA_SIZE)}_jsonlines.csv")
 
 
-    # preprocessing
-    if not os.path.isfile(csvprepro_filepath):
-        if not Path(LOCAL_PROC_DATA_PATH).exists():
-            os.makedirs(LOCAL_PROC_DATA_PATH)
-        try: # on essaye de downloader depuis bq en priorite
-            bq_table = os.path.split(csvprepro_filepath)[-1][:-4]
-            X_processed = download_data(bq_dataset="reviews", bq_table=bq_table, data_size=DATA_SIZE)
-        except: # si on a une erreur on lance le preprocess
-            X_processed = preprocess(cleantype=CLEANTYPE) #rajouter une fonction bq upload dans preprocess
-        #on sauve le dataframe X_proc en local
-        X_processed.to_csv(csvprepro_filepath,index=False,sep=",")
+    # # preprocessing
+    # if not os.path.isfile(csvprepro_filepath):
+    #     if not Path(LOCAL_PROC_DATA_PATH).exists():
+    #         os.makedirs(LOCAL_PROC_DATA_PATH)
+    #     try: # on essaye de downloader depuis bq en priorite
+    #         bq_table = os.path.split(csvprepro_filepath)[-1][:-4]
+    #         X_processed = download_data(bq_dataset="reviews", bq_table=bq_table, data_size=DATA_SIZE)
+    #     except: # si on a une erreur on lance le preprocess
+    #         X_processed = preprocess(cleantype=CLEANTYPE) #rajouter une fonction bq upload dans preprocess
+    #     #on sauve le dataframe X_proc en local
+    #     X_processed.to_csv(csvprepro_filepath,index=False,sep=",")
 
-    # bert clustering
+    # # bert clustering
     csvbert_filepath=Path(LOCAL_CSV_BERT_PATH).joinpath(f"X_bert_cluster_{str(N_CLUSTER)}.csv")
-    if not os.path.isfile(csvbert_filepath):
-        if not Path(LOCAL_CSV_BERT_PATH).exists():
-            os.makedirs(LOCAL_CSV_BERT_PATH)
-        try:
-            bq_table = os.path.split(csvbert_filepath)[-1][:-4]
-            X_cluster = download_data(bq_dataset="bert", bq_table=bq_table, data_size=DATA_SIZE)
-        except:
-            X_cluster = cluster_bro(csv_prepro=csvprepro_filepath,csv_bert=csvbert_filepath)
-        X_cluster.to_csv(csvbert_filepath,index=False,sep=",")
+    # if not os.path.isfile(csvbert_filepath):
+    #     if not Path(LOCAL_CSV_BERT_PATH).exists():
+    #         os.makedirs(LOCAL_CSV_BERT_PATH)
+    #     try:
+    #         bq_table = os.path.split(csvbert_filepath)[-1][:-4]
+    #         X_cluster = download_data(bq_dataset="bert", bq_table=bq_table, data_size=DATA_SIZE)
+    #     except:
+    #         X_cluster = cluster_bro(csv_prepro=csvprepro_filepath,csv_bert=csvbert_filepath)
+    #     X_cluster.to_csv(csvbert_filepath,index=False,sep=",")
 
     #post_processing
 
-    #on a besoin des json metadata
-    mov_metadata_filepath = Path(LOCAL_RAW_DATA_PATH).joinpath("raw_movies", "metadata.json")
-    book_metadata_filepath = Path(LOCAL_RAW_DATA_PATH).joinpath("raw_book", "metadata.json")
-    if not (os.path.isfile(mov_metadata_filepath) and os.path.isfile(book_metadata_filepath)):
-        print("on va dowloader les metadata books et movies from bq")
-        df_raw_metadata_movies = download_data(bq_dataset="movies", bq_table="metadata",data_size="full")
-        df_raw_metadata_movies.to_json(mov_metadata_filepath,orient="records",lines=True,date_format='iso')#, index=False, orient="table")
+    # #on a besoin des json metadata
+    # mov_metadata_filepath = Path(LOCAL_RAW_DATA_PATH).joinpath("raw_movies", "metadata.json")
+    # book_metadata_filepath = Path(LOCAL_RAW_DATA_PATH).joinpath("raw_book", "metadata.json")
+    # if not (os.path.isfile(mov_metadata_filepath) and os.path.isfile(book_metadata_filepath)):
+    #     print("on va dowloader les metadata books et movies from bq")
+    #     df_raw_metadata_movies = download_data(bq_dataset="movies", bq_table="metadata",data_size="full")
+    #     df_raw_metadata_movies.to_json(mov_metadata_filepath,orient="records",lines=True,date_format='iso')#, index=False, orient="table")
 
-        df_raw_metadata_books = download_data(bq_dataset="books", bq_table="metadata",data_size="full")
-        df_raw_metadata_books.to_json(book_metadata_filepath,orient="records",lines=True,date_format='iso')#, index=False, orient="table")
+    #     df_raw_metadata_books = download_data(bq_dataset="books", bq_table="metadata",data_size="full")
+    #     df_raw_metadata_books.to_json(book_metadata_filepath,orient="records",lines=True,date_format='iso')#, index=False, orient="table")
 
     #input_liste_de_film
-    choice_movies=np.arange(20).tolist()
+    choice_movies=[4896.0, 40815.0, 88125.0, 93006.0]
 
     #post process
-    postprocessing(csvcluster=csvbert_filepath,user_movies=choice_movies)
+    postprocessing(csvcluster=csvbert_filepath)
 
+    reco_api(user_movies=choice_movies)
 
     # #   il faudra coder une fonction qui choisit les item_id
     # choice_movies=np.arange(20).tolist()

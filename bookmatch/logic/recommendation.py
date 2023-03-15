@@ -82,15 +82,41 @@ def vector_movies_books(vector_revised):
 
     return X_vectors_books,X_vectors_movies,
 
-def get_local_reccs(csvcluster,user_movies:list):
-
+def before_recs(csvcluster):
     X_all = post_processing(csvcluster)
 
     X_vectors_revised = vector_processing(df_post_processing=X_all)
 
     X_vectors_books,X_vectors_movies =  vector_movies_books(vector_revised=X_vectors_revised)
 
-    verified_movies = [movie_id for movie_id in user_movies if movie_id in X_all.item_id_movie.tolist()]
+
+
+    return X_all,X_vectors_books,X_vectors_movies
+
+
+# def get_local_reccs(csvcluster,user_movies:list):
+def get_local_reccs(user_movies:list):
+    # X_all = post_processing(csvcluster)
+
+    # X_vectors_revised = vector_processing(df_post_processing=X_all)
+
+    # X_vectors_books,X_vectors_movies =  vector_movies_books(vector_revised=X_vectors_revised)
+
+    # verified_movies = [movie_id for movie_id in user_movies if movie_id in X_all.item_id_movie.tolist()]
+
+    verified_movies=user_movies
+
+    filename1=Path(LOCAL_CSV_POSTPROCESS_PATH).joinpath("X_all.csv")
+    filename2=Path(LOCAL_CSV_POSTPROCESS_PATH).joinpath("X_vect_b.csv")
+    filename3=Path(LOCAL_CSV_POSTPROCESS_PATH).joinpath("X_vect_m.csv")
+
+    X_all=pd.read_csv(filename1)
+
+    X_vectors_movies=pd.read_csv(filename3)
+    X_vectors_movies=X_vectors_movies.set_index("item_id_movie")
+
+    X_vectors_books=pd.read_csv(filename2)
+    X_vectors_books=X_vectors_books.set_index("item_id_book")
 
     # recommendations = pd.DataFrame(columns=["similarity","title_book","img_book","url_book"])
     recommendations = pd.DataFrame(columns=["similarity","title_book","img_book"])
@@ -124,15 +150,30 @@ def get_local_reccs(csvcluster,user_movies:list):
     print(recommendations["title_book"])
     return recommendations["title_book"]
 
-def get_global_reccs(csvcluster,user_movies:list):
+def get_global_reccs(user_movies:list):
 
-    X_all = post_processing(csvcluster)
+    # X_all = post_processing(csvcluster)
 
-    X_vectors_revised = vector_processing(df_post_processing=X_all)
+    # X_vectors_revised = vector_processing(df_post_processing=X_all)
 
-    X_vectors_books,X_vectors_movies =  vector_movies_books(vector_revised=X_vectors_revised)
+    # X_vectors_books,X_vectors_movies =  vector_movies_books(vector_revised=X_vectors_revised)
 
-    verified_movies = [movie_id for movie_id in user_movies if movie_id in X_all.item_id_movie.tolist()]
+    # verified_movies = [movie_id for movie_id in user_movies if movie_id in X_all.item_id_movie.tolist()]
+
+    verified_movies=user_movies
+
+    filename1=Path(LOCAL_CSV_POSTPROCESS_PATH).joinpath("X_all.csv")
+    filename2=Path(LOCAL_CSV_POSTPROCESS_PATH).joinpath("X_vect_b.csv")
+    filename3=Path(LOCAL_CSV_POSTPROCESS_PATH).joinpath("X_vect_m.csv")
+
+    X_all=pd.read_csv(filename1)
+
+    X_vectors_movies=pd.read_csv(filename3)
+    X_vectors_movies=X_vectors_movies.set_index("item_id_movie")
+
+    X_vectors_books=pd.read_csv(filename2)
+    X_vectors_books=X_vectors_books.set_index("item_id_book")
+
 
     ## Collect vectors of all inputted films and calculate average vector
     movies_id = pd.DataFrame(verified_movies,columns=["item_id_movie"])
@@ -150,7 +191,7 @@ def get_global_reccs(csvcluster,user_movies:list):
     sim_books_detail = pd.DataFrame(sim_books,index=books_vectors.index,columns=["similarity"])
     sim_books_detail = sim_books_detail.sort_values("similarity",ascending=False)
     # sim_books_detail = pd.merge(sim_books_detail,X_all[["title_book","img_book","url_book","item_id_book"]],on="item_id_book",how="left")
-    sim_books_detail = pd.merge(sim_books_detail,X_all[["title_book","img_book","item_id_book"]],on="item_id_book",how="left")
+    sim_books_detail = pd.merge(sim_books_detail,X_all[["title_book","item_id_book"]],on="item_id_book",how="left")
 
     ## Take top 5 books and show results
     recommendations = sim_books_detail.head(5)
@@ -159,3 +200,5 @@ def get_global_reccs(csvcluster,user_movies:list):
     print(movie_titles.title_movie)
     print ("Top 5 book recommendations")
     print(recommendations["title_book"])
+
+    return recommendations["title_book"]
