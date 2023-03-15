@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from bookmatch.params import *
 from pathlib import Path
+import pickle
 
 def get_data(csvcluster):
     #on va chercher le csv cluster
@@ -162,16 +163,27 @@ def get_global_reccs(user_movies:list):
 
     verified_movies=user_movies
 
-    filename1=Path(LOCAL_CSV_POSTPROCESS_PATH).joinpath("X_all.csv")
-    filename2=Path(LOCAL_CSV_POSTPROCESS_PATH).joinpath("X_vect_b.csv")
-    filename3=Path(LOCAL_CSV_POSTPROCESS_PATH).joinpath("X_vect_m.csv")
+    filename1=Path(LOCAL_CSV_POSTPROCESS_PATH).joinpath("X_all.pickle")
+    filename2=Path(LOCAL_CSV_POSTPROCESS_PATH).joinpath("X_vect_b.pickle")
+    filename3=Path(LOCAL_CSV_POSTPROCESS_PATH).joinpath("X_vect_m.pickle")
 
-    X_all=pd.read_csv(filename1)
+    # Load data (deserialize)
+    with open(filename1, 'rb') as handle:
+        X_all = pickle.load(handle)
+    # X_all=pd.read_csv(filename1)
 
-    X_vectors_movies=pd.read_csv(filename3)
+    # Load data (deserialize)
+    with open(filename3, 'rb') as handle:
+        X_vectors_movies = pickle.load(handle)
+    # X_vectors_movies=pd.read_csv(filename3)
+
     X_vectors_movies=X_vectors_movies.set_index("item_id_movie")
 
-    X_vectors_books=pd.read_csv(filename2)
+        # Load data (deserialize)
+    with open(filename2, 'rb') as handle:
+        X_vectors_books = pickle.load(handle)
+    # X_vectors_books=pd.read_csv(filename2)
+
     X_vectors_books=X_vectors_books.set_index("item_id_book")
 
 
