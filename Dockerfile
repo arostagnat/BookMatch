@@ -3,7 +3,8 @@ FROM python:3.10.6-buster
 
 COPY requirements_prod.txt /requirements.txt
 COPY bookmatch /bookmatch
-COPY data/proc_data/cluster_result/X_bert_cluster_69.csv /data/proc_data/cluster_result/X_bert_cluster_69.csv
+COPY data/clef_api_google_console.json /data/clef_api_google_console.json
+COPY data/bert_data/X_bert_cluster_3000.csv /data/bert_data/X_bert_cluster_3000.csv
 COPY data/raw_data/raw_movies/metadata.json /data/raw_data/raw_movies/metadata.json
 COPY data/raw_data/raw_book/metadata.json /data/raw_data/raw_book/metadata.json
 

@@ -1,7 +1,7 @@
 import os
 
 ##################  VARIABLES  ##################
-DATA_SIZE = 10_200 # prend les x premieres lignes du json; peut prendre "full" avec un string
+DATA_SIZE = "full" # prend les x premieres lignes du json; peut prendre "full" avec un string
 CHUNK_SIZE = 5000 # concat et clean chaque chunk de facon iterative
 
 CLEANTYPE=1 # 0: full clean ou 1:clean_light pour bert 2: raw_data group by item_id
@@ -15,7 +15,7 @@ LOCAL_CSV_BERT_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "ber
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 
-N_CLUSTER = 99
+N_CLUSTER = 3_000
 
 STOPWORDS= ["film", "movie", "book", "read", "character"] # pas utilise encore
 

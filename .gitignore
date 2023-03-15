@@ -2,6 +2,7 @@ data/
 raw_data/
 notebook_temp/
 aide/
+data_bu/
 
 
 # Byte-compiled / optimized / DLL files
